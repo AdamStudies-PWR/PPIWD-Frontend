@@ -4,10 +4,15 @@ Server testowy do lokalnego testowania REST'owej komunikacji z serwerem:
 ## Użycie
 ### Setup
 ```
-npm install
+python3 -m venv venv/
+```
+```
+. venv/bin/activate
+```
+```
+pip3 install -r requirements.txt
 ```
 ### Use
 ```
-npx json-server --watch api_data.json
+python3 test_server.py
 ```
-
