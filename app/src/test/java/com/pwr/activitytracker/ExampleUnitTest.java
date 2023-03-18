@@ -1,4 +1,4 @@
-package com.pwr.tracker;
+package com.pwr.activitytracker;
 
 import org.junit.Test;
 

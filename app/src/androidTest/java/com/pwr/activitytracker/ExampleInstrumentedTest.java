@@ -1,4 +1,4 @@
-package com.pwr.tracker;
+package com.pwr.activitytracker;
 
 import android.content.Context;
 
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
     public void useAppContext() {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        assertEquals("com.pwr.tracker", appContext.getPackageName());
+        assertEquals("com.pwr.activitytracker", appContext.getPackageName());
     }
 }

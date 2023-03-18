@@ -12,11 +12,11 @@
         android:theme="@style/Theme.ActivityTracker"
         tools:targetApi="31">
         <activity
-            android:name=".FullscreenActivity"
-            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:screenOrientation="fullSensor"
+            android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.ActivityTracker.Fullscreen">
+            android:theme="@style/Theme.ActivityTracker.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
