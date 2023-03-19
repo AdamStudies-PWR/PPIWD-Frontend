@@ -1,4 +1,4 @@
-package com.pwr.activitytracker;
+package com.pwr.datagathering;
 
 import org.junit.Test;
 

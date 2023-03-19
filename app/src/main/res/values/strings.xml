@@ -1,14 +1,15 @@
 <resources>
-    <string name="app_name">Activity Tracker</string>
-    <string name="navigation_drawer_open">Open navigation drawer</string>
-    <string name="navigation_drawer_close">Close navigation drawer</string>
-    <string name="nav_header_title">Activity Tracker</string>
-    <string name="nav_header_desc">Navigation header</string>
-    <string name="action_settings">Settings</string>
+    <string name="app_name">Data Gathering</string>
 
-    <string name="menu_train">Train</string>
-    <string name="menu_history">History</string>
-    <string name="menu_settings">Settings</string>
+    <string name="startButton">Start Training</string>
+    <string name="stopButton">Stop Training</string>
 
-    <string name="history_placeholder">Under construction</string>
+    <string name="intervalLabel">Sound signal interval:</string>
+    <string name="intervalDefault">5000</string>
+
+    <string name="randomnessLabel">Sound signal randomization:</string>
+    <string name="randomnessDefault">2000</string>
+
+    <string name="csvNameLabel">CSV name:</string>
+    <string name="csvNameDefault">training_data</string>
 </resources>
