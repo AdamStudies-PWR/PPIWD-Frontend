@@ -31,7 +31,6 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        player = MediaPlayer.create(this, R.raw.bruh);
         generator = new Random();
         threadHandler = new Handler(Looper.getMainLooper());
     }
@@ -48,6 +47,7 @@ public class MainActivity extends AppCompatActivity
     private void endTraining()
     {
         trainingStarted = false;
+        player.stop();
     }
 
     private void playSound()
@@ -78,6 +78,7 @@ public class MainActivity extends AppCompatActivity
         }
         catch (NumberFormatException ignore) {}
 
+        player = MediaPlayer.create(this, R.raw.bruh);
         long playAfter = soundInterval + generator.nextInt(randomRange);
         threadHandler.postDelayed(this::playSound, playAfter);
     }
