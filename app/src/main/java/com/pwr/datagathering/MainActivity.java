@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity
         }
         catch (NumberFormatException ignore) {}
 
-        player = MediaPlayer.create(this, R.raw.bruh);
+        player = MediaPlayer.create(this, R.raw.miau);
         long playAfter = soundInterval + generator.nextInt(randomRange);
         threadHandler.postDelayed(this::playSound, playAfter);
     }
