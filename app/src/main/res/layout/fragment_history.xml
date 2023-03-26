@@ -6,6 +6,8 @@
     android:layout_height="match_parent"
     tools:context=".ui.history.HistoryFragment">
 
+
+
     <TextView
         android:id="@+id/text_history"
         android:layout_width="match_parent"

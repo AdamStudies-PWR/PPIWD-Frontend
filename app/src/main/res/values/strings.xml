@@ -12,11 +12,26 @@
 
     <string name="history_placeholder">Under construction</string>
 
-    <!-- TrainView Texts -->
+    <!-- TrainView Strings -->
+    <string name="training_stopped">Training stopped</string>
     <string name="timer_description">Training time</string>
     <string name="timer_default">00:00:00</string>
 
     <string name="button_start">Start training</string>
     <string name="button_stop">Stop training</string>
-    <!-- TrainView Texts -->
+    <!-- TrainView Strings -->
+
+    <!-- SettingsView Strings -->
+    <string name="serverSectionLabel">Server</string>
+    <string name="userSectionLabel">User</string>
+
+    <string name="ipLabel">Server IP: </string>
+    <string name="defaultIp">192.168.1.190</string>
+    <string name="portLabel">Server port:</string>
+    <string name="defaultPort">3000</string>
+
+    <string name="UIDDLabel">UIDD: </string>
+    <string name="defaultUIDD">00000000000000000000000000000000</string>
+    <!-- SettingsView Strings -->
+
 </resources>
