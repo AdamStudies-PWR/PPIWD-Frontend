@@ -2,6 +2,8 @@ package com.pwr.datagathering;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
@@ -12,10 +14,14 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 public class MainActivity extends AppCompatActivity
 {
+    private final String PREFERENCES_KEY = "appDataKey";
+    ArrayList<Boolean> sensorPrefs = new ArrayList<>();
+
     private boolean trainingStarted = false;
 
     private int randomRange = 2000;
@@ -33,8 +39,20 @@ public class MainActivity extends AppCompatActivity
 
         generator = new Random();
         threadHandler = new Handler(Looper.getMainLooper());
+        loadSettings();
     }
 
+    private void loadSettings()
+    {
+        SharedPreferences settings = getApplicationContext().getSharedPreferences(
+                PREFERENCES_KEY, 0);
+
+        sensorPrefs.add(settings.getBoolean("accelerometer", true));
+        sensorPrefs.add(settings.getBoolean("gyroscope", true));
+        sensorPrefs.add(settings.getBoolean("euler", true));
+        sensorPrefs.add(settings.getBoolean("linear", true));
+        sensorPrefs.add(settings.getBoolean("quaternion", true));
+    }
     public void onClick(View view)
     {
         if (trainingStarted) endTraining();
@@ -81,5 +99,13 @@ public class MainActivity extends AppCompatActivity
         player = MediaPlayer.create(this, R.raw.miau);
         long playAfter = soundInterval + generator.nextInt(randomRange);
         threadHandler.postDelayed(this::playSound, playAfter);
+    }
+
+    public void openSettings(View view)
+    {
+        if (trainingStarted) endTraining();
+
+        Intent intent = new Intent(this, SettingsActivity.class);
+        startActivity(intent);
     }
 }

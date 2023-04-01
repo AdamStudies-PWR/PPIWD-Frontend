@@ -3,13 +3,24 @@
 
     <string name="startButton">Start Training</string>
     <string name="stopButton">Stop Training</string>
+    <string name="settingsButton">Settings</string>
 
     <string name="intervalLabel">Sound signal interval:</string>
     <string name="intervalDefault">5000</string>
-
     <string name="randomnessLabel">Sound signal randomization:</string>
     <string name="randomnessDefault">2000</string>
-
     <string name="csvNameLabel">CSV name:</string>
     <string name="csvNameDefault">training_data</string>
+
+    <!-- Settings -->
+    <string name="settingsActivityName">Settings</string>
+
+    <string name="backButton">Back</string>
+
+    <string name="accelerometerSwitch">Accelerometer</string>
+    <string name="gyroscopeSwitch">Gyroscope</string>
+    <string name="eulerSwitch">Euler Angles</string>
+    <string name="linearSwitch">Linear Acceleration</string>
+    <string name="quaternionSwitch">Quaternion</string>
+
 </resources>

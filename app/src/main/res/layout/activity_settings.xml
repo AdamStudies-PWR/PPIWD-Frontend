@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".SettingsActivity">
+
+    <ScrollView
+        android:id="@+id/scrollView2"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="10dp"
+        app:layout_constraintBottom_toTopOf="@+id/backButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/accelerometerSwitch"
+                android:layout_width="match_parent"
+                android:background="?attr/customColor"
+                android:layout_marginBottom="2dp"
+                android:layout_height="50dp"
+                android:text="@string/accelerometerSwitch" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/gyroscopeSwitch"
+                android:layout_width="match_parent"
+                android:background="?attr/customColor"
+                android:layout_marginBottom="2dp"
+                android:layout_height="50dp"
+                android:text="@string/gyroscopeSwitch" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/eulerSwitch"
+                android:layout_width="match_parent"
+                android:background="?attr/customColor"
+                android:layout_marginBottom="2dp"
+                android:layout_height="50dp"
+                android:text="@string/eulerSwitch" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/linearSwitch"
+                android:layout_width="match_parent"
+                android:background="?attr/customColor"
+                android:layout_marginBottom="2dp"
+                android:layout_height="50dp"
+                android:text="@string/linearSwitch" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/quaternionSwitch"
+                android:layout_width="match_parent"
+                android:background="?attr/customColor"
+                android:layout_marginBottom="2dp"
+                android:layout_height="50dp"
+                android:text="@string/quaternionSwitch" />
+        </LinearLayout>
+    </ScrollView>
+
+    <Button
+        android:id="@+id/backButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="20dp"
+        android:onClick="onBack"
+        android:text="@string/backButton"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/scrollView2" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
