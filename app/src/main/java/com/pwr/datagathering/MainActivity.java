@@ -57,13 +57,12 @@ public class MainActivity extends AppCompatActivity
     {
         if (trainingStarted) endTraining();
         else startTraining();
-
-        Button button = findViewById(R.id.actionButton);
-        button.setText(trainingStarted ? R.string.stopButton : R.string.startButton);
     }
 
     private void endTraining()
     {
+        Button button = findViewById(R.id.actionButton);
+        button.setText(R.string.startButton);
         trainingStarted = false;
         player.stop();
     }
@@ -79,6 +78,8 @@ public class MainActivity extends AppCompatActivity
 
     private void startTraining()
     {
+        Button button = findViewById(R.id.actionButton);
+        button.setText(R.string.stopButton);
         trainingStarted = true;
 
         EditText randomTextView = findViewById(R.id.RandomnessText);
@@ -88,13 +89,19 @@ public class MainActivity extends AppCompatActivity
         {
             randomRange = Integer.parseInt(String.valueOf(randomTextView.getText()));
         }
-        catch (NumberFormatException ignore) {}
+        catch (NumberFormatException exception)
+        {
+            randomTextView.setText(randomRange);
+        }
 
         try
         {
             soundInterval = Integer.parseInt(String.valueOf(intervalTextView.getText()));
         }
-        catch (NumberFormatException ignore) {}
+        catch (NumberFormatException exception)
+        {
+            intervalTextView.setText((int) soundInterval);
+        }
 
         player = MediaPlayer.create(this, R.raw.miau);
         long playAfter = soundInterval + generator.nextInt(randomRange);
