@@ -12,6 +12,14 @@
     <string name="csvNameLabel">CSV name:</string>
     <string name="csvNameDefault">training_data</string>
 
+    <string name="connectedInfo">Sensor connected</string>
+    <string name="disconnectedInfo">Sensor disconnected</string>
+    <string name="connectDevice">Sensor disconnected!</string>
+
+    <string name="deviceName">Sensor:</string>
+    <string name="deviceStatusDisconnected">Disconnected</string>
+    <string name="deviceStatusConnected">Connected</string>
+
     <!-- Settings -->
     <string name="settingsActivityName">Settings</string>
 
