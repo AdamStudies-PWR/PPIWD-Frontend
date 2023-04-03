@@ -27,8 +27,7 @@
 
     <string name="accelerometerSwitch">Accelerometer</string>
     <string name="gyroscopeSwitch">Gyroscope</string>
-    <string name="eulerSwitch">Euler Angles</string>
-    <string name="linearSwitch">Linear Acceleration</string>
-    <string name="quaternionSwitch">Quaternion</string>
+    <string name="barometerSwitch">Barometer</string>
+    <string name="magnetometerSwitch">Magnetometer</string>
 
 </resources>

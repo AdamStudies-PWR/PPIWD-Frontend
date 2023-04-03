@@ -41,28 +41,21 @@
                 android:text="@string/gyroscopeSwitch" />
 
             <androidx.appcompat.widget.SwitchCompat
-                android:id="@+id/eulerSwitch"
+                android:id="@+id/barometerSwitch"
                 android:layout_width="match_parent"
-                android:background="?attr/customColor"
-                android:layout_marginBottom="2dp"
                 android:layout_height="50dp"
-                android:text="@string/eulerSwitch" />
+                android:layout_marginBottom="2dp"
+                android:background="?attr/customColor"
+                android:text="@string/barometerSwitch" />
 
             <androidx.appcompat.widget.SwitchCompat
-                android:id="@+id/linearSwitch"
+                android:id="@+id/magnetoSwitch"
                 android:layout_width="match_parent"
-                android:background="?attr/customColor"
-                android:layout_marginBottom="2dp"
                 android:layout_height="50dp"
-                android:text="@string/linearSwitch" />
+                android:layout_marginBottom="2dp"
+                android:background="?attr/customColor"
+                android:text="@string/magnetometerSwitch" />
 
-            <androidx.appcompat.widget.SwitchCompat
-                android:id="@+id/quaternionSwitch"
-                android:layout_width="match_parent"
-                android:background="?attr/customColor"
-                android:layout_marginBottom="2dp"
-                android:layout_height="50dp"
-                android:text="@string/quaternionSwitch" />
         </LinearLayout>
     </ScrollView>
 

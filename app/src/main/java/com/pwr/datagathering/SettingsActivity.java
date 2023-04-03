@@ -32,9 +32,8 @@ public class SettingsActivity extends AppCompatActivity
 
         setSwitch(R.id.accelerometerSwitch, "accelerometer");
         setSwitch(R.id.gyroscopeSwitch, "gyroscope");
-        setSwitch(R.id.eulerSwitch, "euler");
-        setSwitch(R.id.linearSwitch, "linear");
-        setSwitch(R.id.quaternionSwitch, "quaternion");
+        setSwitch(R.id.barometerSwitch, "barometer");
+        setSwitch(R.id.magnetoSwitch, "magneto");
     }
 
     private void setSwitch(int id, String name)

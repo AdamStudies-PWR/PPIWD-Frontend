@@ -1,22 +1,25 @@
 package com.pwr.datagathering;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.ActivityResultRegistry;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.lifecycle.DefaultLifecycleObserver;
 
 import android.Manifest;
-import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothManager;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -38,18 +41,17 @@ import java.util.Set;
 import com.mbientlab.metawear.MetaWearBoard;
 import com.mbientlab.metawear.android.BtleService;
 import com.mbientlab.metawear.module.Settings;
+import com.pwr.datagathering.sensors.DeviceController;
 
 import bolts.Task;
 
-public class MainActivity extends AppCompatActivity implements ServiceConnection
+public class MainActivity extends AppCompatActivity implements ServiceConnection,
+        DefaultLifecycleObserver
 {
-
-
     private final String PREFERENCES_KEY = "appDataKey";
 
     private BtleService.LocalBinder serviceBinder;
     private MetaWearBoard sensorBoard;
-    ArrayList<Boolean> sensorPrefs = new ArrayList<>();
 
     private boolean trainingStarted = false;
     private boolean deviceConnected = false;
@@ -60,6 +62,21 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     private static MediaPlayer player;
     private static Random generator;
     private static Handler threadHandler;
+
+    private static DeviceController deviceController;
+
+    private ActivityResultLauncher<Intent> activityLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            new ActivityResultCallback<ActivityResult>()
+            {
+                @Override
+                public void onActivityResult(ActivityResult result)
+                {
+                    loadSettings();
+                }
+            }
+    );
+
 
     public static Task<Void> reconnect(final MetaWearBoard board)
     {
@@ -97,6 +114,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
         generator = new Random();
         threadHandler = new Handler(Looper.getMainLooper());
+        deviceController = new DeviceController();
         loadSettings();
 
         getApplicationContext().bindService(new Intent(this, BtleService.class),
@@ -112,14 +130,17 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
     private void loadSettings()
     {
+        Log.i("UWU", "updating settings");
         SharedPreferences settings = getApplicationContext().getSharedPreferences(
                 PREFERENCES_KEY, 0);
 
+        ArrayList<Boolean> sensorPrefs = new ArrayList<>();
         sensorPrefs.add(settings.getBoolean("accelerometer", true));
         sensorPrefs.add(settings.getBoolean("gyroscope", true));
-        sensorPrefs.add(settings.getBoolean("euler", true));
-        sensorPrefs.add(settings.getBoolean("linear", true));
-        sensorPrefs.add(settings.getBoolean("quaternion", true));
+        sensorPrefs.add(settings.getBoolean("barometer", true));
+        sensorPrefs.add(settings.getBoolean("magneto", true));
+
+        deviceController.setAllowedSensors(sensorPrefs);
     }
 
     private void connectToSensor()
@@ -159,7 +180,8 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         }).continueWith(task -> {
             if (!task.isCancelled())
             {
-                setConnInterval(sensorBoard.getModule(Settings.class));;
+                setConnInterval(sensorBoard.getModule(Settings.class));
+                deviceController.getSensors(sensorBoard);
                 deviceConnected = true;
                 runOnUiThread(new Runnable()
                 {
@@ -170,7 +192,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                                         Toast.LENGTH_SHORT).show();
                         TextView text = findViewById(R.id.deviceInfoText);
                         text.setText(R.string.deviceStatusConnected);
-
                         ImageView image = findViewById(R.id.deviceInfoImage);
                         image.setImageResource(R.drawable.baseline_bluetooth_connected_24);
                     }
@@ -219,6 +240,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         button.setText(R.string.startButton);
         trainingStarted = false;
         player.stop();
+        deviceController.stopMeasurements();
     }
 
     private void playSound()
@@ -227,6 +249,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
         player.start();
         long playAfter = soundInterval + generator.nextInt(randomRange);
+        deviceController.addMarker();
         threadHandler.postDelayed(this::playSound, playAfter);
     }
 
@@ -258,6 +281,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         player = MediaPlayer.create(this, R.raw.miau);
         long playAfter = soundInterval + generator.nextInt(randomRange);
         threadHandler.postDelayed(this::playSound, playAfter);
+        deviceController.startMeasurements();
     }
 
     public void openSettings(View view)
@@ -265,7 +289,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         if (trainingStarted) endTraining();
 
         Intent intent = new Intent(this, SettingsActivity.class);
-        startActivity(intent);
+        activityLauncher.launch(intent);
     }
 
     @Override
