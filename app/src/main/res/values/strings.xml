@@ -3,7 +3,6 @@
 
     <string name="startButton">Start Training</string>
     <string name="stopButton">Stop Training</string>
-    <string name="settingsButton">Settings</string>
 
     <string name="intervalLabel">Sound signal interval:</string>
     <string name="intervalDefault">5000</string>
@@ -15,19 +14,13 @@
     <string name="connectedInfo">Sensor connected</string>
     <string name="disconnectedInfo">Sensor disconnected</string>
     <string name="connectDevice">Sensor disconnected!</string>
+    <string name="connectedFailure">Failed to connect to the sensor</string>
 
     <string name="deviceName">Sensor:</string>
     <string name="deviceStatusDisconnected">Disconnected</string>
     <string name="deviceStatusConnected">Connected</string>
-
-    <!-- Settings -->
-    <string name="settingsActivityName">Settings</string>
-
-    <string name="backButton">Back</string>
-
-    <string name="accelerometerSwitch">Accelerometer</string>
-    <string name="gyroscopeSwitch">Gyroscope</string>
-    <string name="barometerSwitch">Barometer</string>
-    <string name="magnetometerSwitch">Magnetometer</string>
+    <string name="saveFailure">Could not write training data to storage</string>
+    <string name="writeFailure">Failed to save training data</string>
+    <string name="dataSaved">Data saved in: </string>
 
 </resources>

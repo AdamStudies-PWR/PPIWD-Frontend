@@ -4,23 +4,31 @@ import androidx.annotation.NonNull;
 
 public class SensorData
 {
+    // For testing purposes not needed in final app
     private String flag = "0";
-    private String acc_ax = "";
-    private String acc_ay = "";
-    private String acc_az = "";
+    private String time = "";
+    private String qw = "";
+    private String qx = "";
+    private String qy = "";
+    private String qz = "";
 
-    public SensorData(Boolean flag, String ax, String ay, String az)
+    public SensorData(Boolean flag)
     {
         this.flag = flag ? "1" : "0";
-        acc_ax = ax;
-        acc_ay = ay;
-        acc_az = az;
     }
+
+    public void setTime(String time) { this.time = time; }
+    public void setQw(String qw) { this.qw = qw; }
+
+    public void setQx(String qx) { this.qx = qx; }
+    public void setQy(String qy) { this.qy = qy; }
+    public void setQz(String qz) { this.qz = qz; }
 
     @NonNull
     public String toString()
     {
         String separator = ";";
-        return flag + separator + acc_ax + separator + acc_ay + separator + acc_az;
+        return flag + separator + time + separator + qw + separator + qx + separator + qy
+                + separator + qz;
     }
 }

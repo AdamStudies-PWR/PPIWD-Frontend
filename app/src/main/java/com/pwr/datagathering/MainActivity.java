@@ -1,10 +1,5 @@
 package com.pwr.datagathering;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.ActivityResultRegistry;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -16,12 +11,11 @@ import android.bluetooth.BluetoothDevice;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -33,23 +27,26 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 
 import com.mbientlab.metawear.MetaWearBoard;
+import com.mbientlab.metawear.UnsupportedModuleException;
 import com.mbientlab.metawear.android.BtleService;
 import com.mbientlab.metawear.module.Settings;
 import com.pwr.datagathering.sensors.DeviceController;
+import com.pwr.datagathering.sensors.SensorData;
 
 import bolts.Task;
 
 public class MainActivity extends AppCompatActivity implements ServiceConnection,
         DefaultLifecycleObserver
 {
-    private final String PREFERENCES_KEY = "appDataKey";
-
     private BtleService.LocalBinder serviceBinder;
     private MetaWearBoard sensorBoard;
 
@@ -64,19 +61,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     private static Handler threadHandler;
 
     private static DeviceController deviceController;
-
-    private ActivityResultLauncher<Intent> activityLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            new ActivityResultCallback<ActivityResult>()
-            {
-                @Override
-                public void onActivityResult(ActivityResult result)
-                {
-                    loadSettings();
-                }
-            }
-    );
-
 
     public static Task<Void> reconnect(final MetaWearBoard board)
     {
@@ -115,7 +99,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         generator = new Random();
         threadHandler = new Handler(Looper.getMainLooper());
         deviceController = new DeviceController();
-        loadSettings();
 
         getApplicationContext().bindService(new Intent(this, BtleService.class),
                 this, BIND_AUTO_CREATE);
@@ -126,21 +109,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     {
         super.onDestroy();
         getApplicationContext().unbindService(this);
-    }
-
-    private void loadSettings()
-    {
-        Log.i("UWU", "updating settings");
-        SharedPreferences settings = getApplicationContext().getSharedPreferences(
-                PREFERENCES_KEY, 0);
-
-        ArrayList<Boolean> sensorPrefs = new ArrayList<>();
-        sensorPrefs.add(settings.getBoolean("accelerometer", true));
-        sensorPrefs.add(settings.getBoolean("gyroscope", true));
-        sensorPrefs.add(settings.getBoolean("barometer", true));
-        sensorPrefs.add(settings.getBoolean("magneto", true));
-
-        deviceController.setAllowedSensors(sensorPrefs);
     }
 
     private void connectToSensor()
@@ -181,8 +149,23 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             if (!task.isCancelled())
             {
                 setConnInterval(sensorBoard.getModule(Settings.class));
-                deviceController.getSensors(sensorBoard);
-                deviceConnected = true;
+                try
+                {
+                    deviceController.setSensors(sensorBoard);
+                    deviceConnected = true;
+                }
+                catch (UnsupportedModuleException exception)
+                {
+                    runOnUiThread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            Toast.makeText(getApplicationContext(), R.string.connectedFailure,
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
                 runOnUiThread(new Runnable()
                 {
                     @Override
@@ -203,7 +186,14 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
     private void requestBluetoothPermission()
     {
-        this.requestPermissions(new String[] {Manifest.permission.BLUETOOTH_CONNECT}, 1);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+        {
+            this.requestPermissions(new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 1);
+        }
+        else
+        {
+            this.requestPermissions(new String[]{Manifest.permission.BLUETOOTH}, 1);
+        }
     }
 
     @Override
@@ -240,7 +230,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         button.setText(R.string.startButton);
         trainingStarted = false;
         player.stop();
-        deviceController.stopMeasurements();
+        writeToFile(deviceController.stopMeasurements());
     }
 
     private void playSound()
@@ -249,7 +239,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
         player.start();
         long playAfter = soundInterval + generator.nextInt(randomRange);
-        deviceController.addMarker();
+        deviceController.setMarker();
         threadHandler.postDelayed(this::playSound, playAfter);
     }
 
@@ -284,12 +274,54 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         deviceController.startMeasurements();
     }
 
-    public void openSettings(View view)
+    // For testing purposes not needed in final app
+    private void writeToFile(ArrayList<SensorData> data)
     {
-        if (trainingStarted) endTraining();
+        String header = "FLAG;TIME;QUATERIONW;QUATERIONX;QUATERIONY;QUATERIONZ";
 
-        Intent intent = new Intent(this, SettingsActivity.class);
-        activityLauncher.launch(intent);
+        File documents = Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_DOCUMENTS);
+
+        EditText csvNameText = findViewById(R.id.CsvText);
+        String filename = String.valueOf(csvNameText.getText());
+
+        File file = new File(documents, filename + ".csv");
+
+        int counter = 1;
+        while (file.exists())
+        {
+            Log.e("UWU", file.getPath());
+            file = new File(documents, filename + "_" + counter + ".csv");
+            counter++;
+        }
+
+        FileOutputStream stream = null;
+
+        try
+        {
+            file.createNewFile();
+            stream = new FileOutputStream(file, true);
+            OutputStreamWriter writer = new OutputStreamWriter(stream);
+
+            writer.append(header);
+            writer.append("\n");
+
+            for (SensorData sensor: data)
+            {
+                writer.append(sensor.toString());
+                writer.append("\n");
+            }
+
+            writer.close();
+            stream.flush();
+            stream.close();
+            Toast.makeText(this,  R.string.dataSaved + file.getPath(), Toast.LENGTH_SHORT).show();
+        }
+        catch (Exception exception)
+        {
+            Toast.makeText(getApplicationContext(), R.string.writeFailure, Toast.LENGTH_SHORT)
+                    .show();
+        }
     }
 
     @Override
@@ -304,6 +336,5 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     {
         Toast.makeText(getApplicationContext(), R.string.disconnectedInfo, Toast.LENGTH_SHORT)
                 .show();
-        if (trainingStarted) endTraining();
     }
 }
