@@ -11,6 +11,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
 import android.os.Build;
@@ -24,6 +25,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -47,20 +49,24 @@ import bolts.Task;
 public class MainActivity extends AppCompatActivity implements ServiceConnection,
         DefaultLifecycleObserver
 {
+    private final String PREFERENCES_KEY = "user-prefs-key";
     private BtleService.LocalBinder serviceBinder;
     private MetaWearBoard sensorBoard;
 
     private boolean trainingStarted = false;
     private boolean deviceConnected = false;
+    private boolean useQuternions = true;
 
     private int randomRange = 2000;
     private long soundInterval = 5000;
+    private String filename = "training_data";
 
     private static MediaPlayer player;
     private static Random generator;
     private static Handler threadHandler;
 
     private static DeviceController deviceController;
+    private SharedPreferences settings;
 
     public static Task<Void> reconnect(final MetaWearBoard board)
     {
@@ -77,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                 });
     }
 
-    static void setConnInterval(Settings settings)
+    void setConnInterval(Settings settings)
     {
         if (settings != null)
         {
@@ -102,6 +108,30 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
         getApplicationContext().bindService(new Intent(this, BtleService.class),
                 this, BIND_AUTO_CREATE);
+        loadUserPrefs();
+    }
+
+    private void loadUserPrefs()
+    {
+        settings = getApplicationContext().getSharedPreferences(
+                PREFERENCES_KEY, 0);
+
+        EditText randomTextView = findViewById(R.id.RandomnessText);
+        randomRange = settings.getInt("random", randomRange);
+        randomTextView.setText(String.valueOf(randomRange));
+
+        EditText intervalTextView = findViewById(R.id.IntervalText);
+        soundInterval = settings.getInt("interval", (int) soundInterval);
+        intervalTextView.setText(String.valueOf(soundInterval));
+
+        EditText csvTextView = findViewById(R.id.CsvText);
+        filename = settings.getString("csv", filename);
+        csvTextView.setText(filename);
+
+        Spinner modeSpinner= findViewById(R.id.ModeSpinner);
+        int position = settings.getInt("mode", useQuternions ? 0 : 1);
+        modeSpinner.setSelection(position);
+        useQuternions = (position == 0);
     }
 
     @Override
@@ -135,6 +165,40 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                 break;
             }
         }
+    }
+
+    public void applySettings(View view)
+    {
+        SharedPreferences.Editor editor = settings.edit();
+        EditText randomTextView = findViewById(R.id.RandomnessText);
+        try
+        {
+            randomRange = Integer.parseInt(String.valueOf(randomTextView.getText()));
+            editor.putInt("random", randomRange);
+        } catch (NumberFormatException exception)
+        {
+            randomTextView.setText(String.valueOf(randomRange));
+        }
+
+        EditText intervalTextView = findViewById(R.id.IntervalText);
+        try
+        {
+            soundInterval = Integer.parseInt(String.valueOf(intervalTextView.getText()));
+            editor.putInt("interval", (int) soundInterval);
+        } catch (NumberFormatException exception)
+        {
+            intervalTextView.setText(String.valueOf(soundInterval));
+        }
+
+        EditText csvTextView = findViewById(R.id.CsvText);
+        filename = String.valueOf(csvTextView.getText());
+        editor.putString("csv", filename);
+
+        Spinner modeSpinner= findViewById(R.id.ModeSpinner);
+        useQuternions = modeSpinner.getSelectedItem().toString().equals("Quaternions");
+        editor.putInt("mode", modeSpinner.getSelectedItemPosition());
+
+        editor.apply();
     }
 
     private void connectToDevice(BluetoothDevice device)
@@ -249,48 +313,27 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         button.setText(R.string.stopButton);
         trainingStarted = true;
 
-        EditText randomTextView = findViewById(R.id.RandomnessText);
-        EditText intervalTextView = findViewById(R.id.IntervalText);
-
-        try
-        {
-            randomRange = Integer.parseInt(String.valueOf(randomTextView.getText()));
-        } catch (NumberFormatException exception)
-        {
-            randomTextView.setText(randomRange);
-        }
-
-        try
-        {
-            soundInterval = Integer.parseInt(String.valueOf(intervalTextView.getText()));
-        } catch (NumberFormatException exception)
-        {
-            intervalTextView.setText((int) soundInterval);
-        }
-
         player = MediaPlayer.create(this, R.raw.miau);
         long playAfter = soundInterval + generator.nextInt(randomRange);
         threadHandler.postDelayed(this::playSound, playAfter);
-        deviceController.startMeasurements();
+        deviceController.startMeasurements(useQuternions);
     }
 
     // For testing purposes not needed in final app
     private void writeToFile(ArrayList<SensorData> data)
     {
-        String header = "FLAG;TIME;QUATERIONW;QUATERIONX;QUATERIONY;QUATERIONZ";
+        String headerQuternion = "FLAG;TIME;QUATERIONW;QUATERIONX;QUATERIONY;QUATERIONZ";
+        String headerEuler = "FLAG;TIME;HEADING;PITCH;ROLL;YAW";
 
         File documents = Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_DOCUMENTS);
 
-        EditText csvNameText = findViewById(R.id.CsvText);
-        String filename = String.valueOf(csvNameText.getText());
-
         File file = new File(documents, filename + ".csv");
 
         int counter = 1;
-        while (file.exists())
+        while (file.isFile() || file.isDirectory() || file.exists())
         {
-            Log.e("UWU", file.getPath());
+            Log.e("UWU", filename + counter);
             file = new File(documents, filename + "_" + counter + ".csv");
             counter++;
         }
@@ -299,23 +342,30 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
         try
         {
-            file.createNewFile();
+            if (!file.createNewFile())
+            {
+                Toast.makeText(this,  R.string.saveFailure + file.getPath(),
+                        Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             stream = new FileOutputStream(file, true);
             OutputStreamWriter writer = new OutputStreamWriter(stream);
 
-            writer.append(header);
+            writer.append(useQuternions ? headerQuternion : headerEuler);
             writer.append("\n");
 
             for (SensorData sensor: data)
             {
-                writer.append(sensor.toString());
+                writer.append(sensor.toString(useQuternions));
                 writer.append("\n");
             }
 
             writer.close();
             stream.flush();
             stream.close();
-            Toast.makeText(this,  R.string.dataSaved + file.getPath(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this,  R.string.dataSaved + file.getPath(),
+                    Toast.LENGTH_SHORT).show();
         }
         catch (Exception exception)
         {

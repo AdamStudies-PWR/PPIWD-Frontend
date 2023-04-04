@@ -3,6 +3,8 @@
 
     <string name="startButton">Start Training</string>
     <string name="stopButton">Stop Training</string>
+    <string name="applyButton">Apply</string>
+
 
     <string name="intervalLabel">Sound signal interval:</string>
     <string name="intervalDefault">5000</string>
@@ -10,6 +12,7 @@
     <string name="randomnessDefault">2000</string>
     <string name="csvNameLabel">CSV name:</string>
     <string name="csvNameDefault">training_data</string>
+    <string name="modeLabel">Mode:</string>
 
     <string name="connectedInfo">Sensor connected</string>
     <string name="disconnectedInfo">Sensor disconnected</string>
@@ -19,7 +22,7 @@
     <string name="deviceName">Sensor:</string>
     <string name="deviceStatusDisconnected">Disconnected</string>
     <string name="deviceStatusConnected">Connected</string>
-    <string name="saveFailure">Could not write training data to storage</string>
+    <string name="saveFailure">Could not create training data in storage</string>
     <string name="writeFailure">Failed to save training data</string>
     <string name="dataSaved">Data saved in: </string>
 
