@@ -19,36 +19,7 @@ public class DeviceController
 
     private final ArrayList<SensorData> sensorDataList = new ArrayList<>();
 
-    public void startMeasurements(boolean useQuaternions)
-    {
-        if (useQuaternions) useQuaternion();
-        else useEuler();
-    }
-
-    private void useQuaternion()
-    {
-        sensorFusion.quaternion().addRouteAsync(source -> source.stream((data, env) -> {
-            SensorData sensorData = new SensorData(marker);
-            if (marker) marker = false;
-
-            final Quaternion quaternion = data.value(Quaternion.class);
-            sensorData.setTime(String.valueOf(System.currentTimeMillis() - startTime));
-            sensorData.setQw(String.valueOf(quaternion.w()));
-            sensorData.setQx(String.valueOf(quaternion.x()));
-            sensorData.setQy(String.valueOf(quaternion.y()));
-            sensorData.setQz(String.valueOf(quaternion.z()));
-
-            Log.i("DeviceController", sensorData.toString(true));
-            sensorDataList.add(sensorData);
-        })).continueWith(task -> {
-            sensorFusion.quaternion().start();
-            sensorFusion.start();
-            startTime = System.currentTimeMillis();
-            return null;
-        });
-    }
-
-    private void useEuler()
+    public void startMeasurements()
     {
         sensorFusion.eulerAngles().addRouteAsync(source -> source.stream((data, env) -> {
             SensorData sensorData = new SensorData(marker);
@@ -56,12 +27,11 @@ public class DeviceController
 
             final EulerAngles angles = data.value(EulerAngles.class);
             sensorData.setTime(String.valueOf(System.currentTimeMillis() - startTime));
-            sensorData.setHeading(String.valueOf(angles.heading()));
             sensorData.setPitch(String.valueOf(angles.pitch()));
             sensorData.setRoll(String.valueOf(angles.roll()));
             sensorData.setYaw(String.valueOf(angles.yaw()));
 
-            Log.i("DeviceController", sensorData.toString(false));
+            Log.i("DeviceController", sensorData.toString());
             sensorDataList.add(sensorData);
         })).continueWith(task -> {
             sensorFusion.eulerAngles().start();

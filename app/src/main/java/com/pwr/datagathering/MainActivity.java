@@ -55,7 +55,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
     private boolean trainingStarted = false;
     private boolean deviceConnected = false;
-    private boolean useQuternions = true;
 
     private int randomRange = 2000;
     private long soundInterval = 5000;
@@ -127,11 +126,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         EditText csvTextView = findViewById(R.id.CsvText);
         filename = settings.getString("csv", filename);
         csvTextView.setText(filename);
-
-        Spinner modeSpinner= findViewById(R.id.ModeSpinner);
-        int position = settings.getInt("mode", useQuternions ? 0 : 1);
-        modeSpinner.setSelection(position);
-        useQuternions = (position == 0);
     }
 
     @Override
@@ -193,10 +187,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         EditText csvTextView = findViewById(R.id.CsvText);
         filename = String.valueOf(csvTextView.getText());
         editor.putString("csv", filename);
-
-        Spinner modeSpinner= findViewById(R.id.ModeSpinner);
-        useQuternions = modeSpinner.getSelectedItem().toString().equals("Quaternions");
-        editor.putInt("mode", modeSpinner.getSelectedItemPosition());
 
         editor.apply();
     }
@@ -316,14 +306,13 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         player = MediaPlayer.create(this, R.raw.miau);
         long playAfter = soundInterval + generator.nextInt(randomRange);
         threadHandler.postDelayed(this::playSound, playAfter);
-        deviceController.startMeasurements(useQuternions);
+        deviceController.startMeasurements();
     }
 
     // For testing purposes not needed in final app
     private void writeToFile(ArrayList<SensorData> data)
     {
-        String headerQuternion = "FLAG;TIME;QUATERIONW;QUATERIONX;QUATERIONY;QUATERIONZ";
-        String headerEuler = "FLAG;TIME;HEADING;PITCH;ROLL;YAW";
+        String headerEuler = "FLAG;TIME;PITCH;ROLL;YAW";
 
         File documents = Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_DOCUMENTS);
@@ -333,7 +322,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         int counter = 1;
         while (file.isFile() || file.isDirectory() || file.exists())
         {
-            Log.e("UWU", filename + counter);
             file = new File(documents, filename + "_" + counter + ".csv");
             counter++;
         }
@@ -352,12 +340,12 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             stream = new FileOutputStream(file, true);
             OutputStreamWriter writer = new OutputStreamWriter(stream);
 
-            writer.append(useQuternions ? headerQuternion : headerEuler);
+            writer.append(headerEuler);
             writer.append("\n");
 
             for (SensorData sensor: data)
             {
-                writer.append(sensor.toString(useQuternions));
+                writer.append(sensor.toString());
                 writer.append("\n");
             }
 
