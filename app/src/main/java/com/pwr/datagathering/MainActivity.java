@@ -20,12 +20,10 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -66,6 +64,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
     private static DeviceController deviceController;
     private SharedPreferences settings;
+    private String deviceName = "MetaWear";
 
     public static Task<Void> reconnect(final MetaWearBoard board)
     {
@@ -126,6 +125,10 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         EditText csvTextView = findViewById(R.id.CsvText);
         filename = settings.getString("csv", filename);
         csvTextView.setText(filename);
+
+        EditText deviceTextView = findViewById(R.id.DeviceNameText);
+        deviceName = settings.getString("sensor", deviceName);
+        deviceTextView.setText(deviceName);
     }
 
     @Override
@@ -138,13 +141,14 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     private void connectToSensor()
     {
         BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (ActivityCompat.checkSelfPermission(this,
+        if ((ActivityCompat.checkSelfPermission(this,
                 Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED)
+                || (ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADMIN)
+                        != PackageManager.PERMISSION_GRANTED))
         {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
-            {
-                requestBluetoothPermission();
-            }
+            requestBluetoothPermission();
             return;
         }
 
@@ -152,8 +156,8 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
         for (BluetoothDevice device : pairedDevices)
         {
-            // IMPORTANT TODO: This works but will it work for all of them or just my specific one?
-            if (Objects.equals(device.getName(), "MetaWear"))
+            // IMPORTANT TODO: This works, but will it work for all of them or just my specific one?
+            if (Objects.equals(device.getName(), deviceName))
             {
                 connectToDevice(device);
                 break;
@@ -188,6 +192,10 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         filename = String.valueOf(csvTextView.getText());
         editor.putString("csv", filename);
 
+        EditText deviceTextView = findViewById(R.id.DeviceNameText);
+        deviceName = String.valueOf(deviceTextView.getText());
+        editor.putString("sensor", deviceName);
+
         editor.apply();
     }
 
@@ -210,28 +218,16 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                 }
                 catch (UnsupportedModuleException exception)
                 {
-                    runOnUiThread(new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            Toast.makeText(getApplicationContext(), R.string.connectedFailure,
-                                    Toast.LENGTH_SHORT).show();
-                        }
-                    });
+                    runOnUiThread(() -> Toast.makeText(getApplicationContext(), R.string.connectedFailure,
+                            Toast.LENGTH_SHORT).show());
                 }
-                runOnUiThread(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        Toast.makeText(getApplicationContext(), R.string.connectedInfo,
-                                        Toast.LENGTH_SHORT).show();
-                        TextView text = findViewById(R.id.deviceInfoText);
-                        text.setText(R.string.deviceStatusConnected);
-                        ImageView image = findViewById(R.id.deviceInfoImage);
-                        image.setImageResource(R.drawable.baseline_bluetooth_connected_24);
-                    }
+                runOnUiThread(() -> {
+                    Toast.makeText(getApplicationContext(), R.string.connectedInfo,
+                                    Toast.LENGTH_SHORT).show();
+                    TextView text = findViewById(R.id.deviceInfoText);
+                    text.setText(R.string.deviceStatusConnected);
+                    ImageView image = findViewById(R.id.deviceInfoImage);
+                    image.setImageResource(R.drawable.baseline_bluetooth_connected_24);
                 });
             }
             return null;
@@ -246,7 +242,10 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         }
         else
         {
-            this.requestPermissions(new String[]{Manifest.permission.BLUETOOTH}, 1);
+            this.requestPermissions(new String[]{Manifest.permission.BLUETOOTH,
+                    Manifest.permission.BLUETOOTH_ADMIN,
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
         }
     }
 
@@ -261,6 +260,10 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
             {
                 connectToSensor();
+            }
+            else
+            {
+                Toast.makeText(this,  R.string.btNoPermission, Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -326,7 +329,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             counter++;
         }
 
-        FileOutputStream stream = null;
+        FileOutputStream stream;
 
         try
         {

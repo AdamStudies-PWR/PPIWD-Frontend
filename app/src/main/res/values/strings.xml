@@ -12,7 +12,8 @@
     <string name="randomnessDefault">2000</string>
     <string name="csvNameLabel">CSV name:</string>
     <string name="csvNameDefault">training_data</string>
-    <string name="modeLabel">Mode:</string>
+    <string name="deviceNameLabel">Device name:</string>
+    <string name="deviceNameDefault">MetaWear</string>
 
     <string name="connectedInfo">Sensor connected</string>
     <string name="disconnectedInfo">Sensor disconnected</string>
@@ -25,5 +26,6 @@
     <string name="saveFailure">Could not create training data in storage</string>
     <string name="writeFailure">Failed to save training data</string>
     <string name="dataSaved">Data saved in: </string>
+    <string name="btNoPermission">Permission denied, please grant manually in settings</string>
 
 </resources>
