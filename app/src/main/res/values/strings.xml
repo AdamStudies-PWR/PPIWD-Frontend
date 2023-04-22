@@ -27,5 +27,6 @@
     <string name="writeFailure">Failed to save training data</string>
     <string name="dataSaved">Data saved in: </string>
     <string name="btNoPermission">Permission denied, please grant manually in settings</string>
+    <string name="permissionError">Error connecting to device, check permissions</string>
 
 </resources>

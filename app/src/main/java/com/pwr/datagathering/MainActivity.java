@@ -1,6 +1,7 @@
 package com.pwr.datagathering;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.DefaultLifecycleObserver;
@@ -20,6 +21,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -138,30 +140,49 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         getApplicationContext().unbindService(this);
     }
 
+    private boolean arePermissionsGranted()
+    {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+        {
+            return ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT)
+                    == PackageManager.PERMISSION_GRANTED;
+        }
+        else
+        {
+            return ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH) == PackageManager.PERMISSION_GRANTED
+                    && ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADMIN) == PackageManager.PERMISSION_GRANTED
+                    && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                    && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+        }
+    }
+
     private void connectToSensor()
     {
         BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if ((ActivityCompat.checkSelfPermission(this,
-                Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED)
-                || (ActivityCompat.checkSelfPermission(this,
-                Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADMIN)
-                        != PackageManager.PERMISSION_GRANTED))
+        if (!arePermissionsGranted())
         {
             requestBluetoothPermission();
             return;
         }
 
-        Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
-
-        for (BluetoothDevice device : pairedDevices)
+        try
         {
-            // IMPORTANT TODO: This works, but will it work for all of them or just my specific one?
-            if (Objects.equals(device.getName(), deviceName))
+            Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
+
+            for (BluetoothDevice device : pairedDevices)
             {
-                connectToDevice(device);
-                break;
+                // IMPORTANT TODO: This works, but will it work for all of them or just my specific one?
+                if (Objects.equals(device.getName(), deviceName))
+                {
+                    connectToDevice(device);
+                    break;
+                }
             }
+        }
+        catch (SecurityException exception)
+        {
+            Log.e("BLUETOOTH", "Error granting permission: " + exception.toString());
+            Toast.makeText(getApplicationContext(), R.string.permissionError, Toast.LENGTH_SHORT).show();
         }
     }
 
