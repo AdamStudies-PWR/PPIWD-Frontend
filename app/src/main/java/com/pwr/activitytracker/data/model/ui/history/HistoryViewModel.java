@@ -1,4 +1,4 @@
-package com.pwr.activitytracker.ui.history;
+package com.pwr.activitytracker.data.model.ui.history;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;

@@ -22,7 +22,6 @@ import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity
 {
-    private final String PREFERENCES_KEY = "appDataKey";
     private AppBarConfiguration mAppBarConfiguration;
     private ActivityMainBinding binding;
 
@@ -46,15 +45,6 @@ public class MainActivity extends AppCompatActivity
         NavigationUI.setupActionBarWithNavController(this, navController,
                 mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
-
-        SharedPreferences settings = getApplicationContext().getSharedPreferences(
-                PREFERENCES_KEY, 0);
-
-        if (settings.getString("UUID", "").equals(""))
-        {
-            setUserUIDD(settings);
-        }
-
     }
 
     @Override
@@ -72,26 +62,5 @@ public class MainActivity extends AppCompatActivity
                 R.id.nav_host_fragment_content_main);
         return NavigationUI.navigateUp(navController, mAppBarConfiguration)
                 || super.onSupportNavigateUp();
-    }
-
-    private void setUserUIDD(SharedPreferences settings)
-    {
-        String defaultUIDD = String.valueOf(R.string.defaultUIDD);
-
-        try
-        {
-            defaultUIDD = createUserUIDD();
-        }
-        catch (Exception ignore) {}
-
-        SharedPreferences.Editor editor = settings.edit();
-        editor.putString("UUID", defaultUIDD);
-        editor.apply();
-    }
-
-    private String createUserUIDD() throws Exception
-    {
-        return UUID.randomUUID().toString().replaceAll("-", "")
-                .toUpperCase(Locale.ROOT);
     }
 }

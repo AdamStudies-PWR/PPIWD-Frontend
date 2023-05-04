@@ -1,10 +1,7 @@
 <resources>
     <string name="app_name">Activity Tracker</string>
-    <string name="navigation_drawer_open">Open navigation drawer</string>
-    <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="nav_header_title">Activity Tracker</string>
     <string name="nav_header_desc">Navigation header</string>
-    <string name="action_settings">Settings</string>
 
     <string name="menu_train">Train</string>
     <string name="menu_history">History</string>
@@ -13,25 +10,61 @@
     <string name="history_placeholder">Under construction</string>
 
     <!-- TrainView Strings -->
+    <string name="mode_text">Current activity: </string>
+
+    <string name="training_error">Could not start training, check connection to sensor</string>
+
     <string name="training_stopped">Training stopped</string>
     <string name="timer_description">Training time</string>
     <string name="timer_default">00:00:00</string>
 
-    <string name="button_start">Start training</string>
-    <string name="button_stop">Stop training</string>
+    <string name="heading_label">Heading: </string>
+    <string name="pitch_label">Pitch: </string>
+    <string name="roll_label">Roll: </string>
+    <string name="yaw_label">Yaw: </string>
+    <string name="defaultValue">0</string>
+
     <!-- TrainView Strings -->
 
     <!-- SettingsView Strings -->
+    <string name="logoutButton">Logout</string>
+
     <string name="serverSectionLabel">Server</string>
     <string name="userSectionLabel">User</string>
+    <string name="sensorSectionLabel">Sensor</string>
 
     <string name="ipLabel">Server IP: </string>
     <string name="defaultIp">192.168.1.190</string>
     <string name="portLabel">Server port:</string>
     <string name="defaultPort">3000</string>
 
+    <string name="deviceLabel">Device: </string>
+
     <string name="UIDDLabel">UIDD: </string>
     <string name="defaultUIDD">00000000000000000000000000000000</string>
+    <string name="userNameLabel">Username: </string>
+    <string name="defaultUserName">placeholder</string>
+    <string name="passwordLabel">Password: </string>
+    <string name="passwordPlaceholder">12345678</string>
+
+    <string name="UIDDCopied">UIDD copied to clipboard</string>
     <!-- SettingsView Strings -->
+
+    <!-- Login Activity Strings -->
+    <string name="title_activity_login">LoginActivity</string>
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="welcome">"Welcome !"</string>
+    <string name="invalid_username">Not a valid username</string>
+    <string name="invalid_password">Password must be >5 characters</string>
+    <string name="login_failed">"Login failed"</string>
+    <!-- Login Activity Strings -->
+
+    <string-array name="available_activities">
+        <item>Jumping Jack</item>
+    </string-array>
+
 
 </resources>

@@ -1,4 +1,4 @@
-package com.pwr.activitytracker.ui.train;
+package com.pwr.activitytracker.data.model.ui.train;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
