@@ -68,7 +68,7 @@ public class DeviceController
     {
         isPaused = false;
         offset = 0;
-        //sensorFusion.stop();
+        sensorFusion.stop();
         return sensorDataList;
     }
 

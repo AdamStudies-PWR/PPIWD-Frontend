@@ -1,27 +1,24 @@
 package com.pwr.activitytracker.data.model.ui.login;
 
 import android.app.Activity;
-
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProvider;
-
+import android.content.Intent;
 import android.os.Bundle;
-
-import androidx.annotation.Nullable;
-import androidx.annotation.StringRes;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
+
+import com.pwr.activitytracker.BluetoothActivity;
 import com.pwr.activitytracker.R;
 import com.pwr.activitytracker.databinding.ActivityLoginBinding;
 
@@ -45,6 +42,7 @@ public class LoginActivity extends AppCompatActivity
         final EditText usernameEditText = binding.username;
         final EditText passwordEditText = binding.password;
         final Button loginButton = binding.login;
+        final Button registerButton = binding.register;
         final ProgressBar loadingProgressBar = binding.loading;
 
         loginViewModel.getLoginFormState().observe(this, new Observer<LoginFormState>()
@@ -57,6 +55,7 @@ public class LoginActivity extends AppCompatActivity
                     return;
                 }
                 loginButton.setEnabled(loginFormState.isDataValid());
+                registerButton.setEnabled(loginFormState.isDataValid());
                 if (loginFormState.getUsernameError() != null)
                 {
                     usernameEditText.setError(getString(loginFormState.getUsernameError()));
@@ -68,29 +67,23 @@ public class LoginActivity extends AppCompatActivity
             }
         });
 
-        loginViewModel.getLoginResult().observe(this, new Observer<LoginResult>()
-        {
-            @Override
-            public void onChanged(@Nullable LoginResult loginResult)
+        loginViewModel.getLoginResult().observe(this, loginResult -> {
+            if (loginResult == null)
             {
-                if (loginResult == null)
-                {
-                    return;
-                }
-                loadingProgressBar.setVisibility(View.GONE);
-                if (loginResult.getError() != null)
-                {
-                    showLoginFailed(loginResult.getError());
-                }
-                if (loginResult.getSuccess() != null)
-                {
-                    updateUiWithUser(loginResult.getSuccess());
-                }
-                setResult(Activity.RESULT_OK);
-
-                //Complete and destroy login activity once successful
-                finish();
+                return;
             }
+            loadingProgressBar.setVisibility(View.GONE);
+            if (loginResult.getError() != null)
+            {
+                showLoginFailed(loginResult.getError());
+            }
+            if (loginResult.getSuccess() != null)
+            {
+                updateUiWithUser(loginResult.getSuccess());
+            }
+            setResult(Activity.RESULT_OK);
+            get_bt_device(usernameEditText.getText().toString());
+            finish();
         });
 
         TextWatcher afterTextChangedListener = new TextWatcher()
@@ -116,31 +109,34 @@ public class LoginActivity extends AppCompatActivity
         };
         usernameEditText.addTextChangedListener(afterTextChangedListener);
         passwordEditText.addTextChangedListener(afterTextChangedListener);
-        passwordEditText.setOnEditorActionListener(new TextView.OnEditorActionListener()
-        {
-
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event)
+        passwordEditText.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_DONE)
             {
-                if (actionId == EditorInfo.IME_ACTION_DONE)
-                {
-                    loginViewModel.login(usernameEditText.getText().toString(),
-                            passwordEditText.getText().toString());
-                }
-                return false;
-            }
-        });
-
-        loginButton.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View v)
-            {
-                loadingProgressBar.setVisibility(View.VISIBLE);
                 loginViewModel.login(usernameEditText.getText().toString(),
                         passwordEditText.getText().toString());
             }
+            return false;
         });
+
+        loginButton.setOnClickListener(v -> {
+            loadingProgressBar.setVisibility(View.VISIBLE);
+            loginViewModel.login(usernameEditText.getText().toString(),
+                    passwordEditText.getText().toString());
+        });
+
+        registerButton.setOnClickListener(v-> {
+            loadingProgressBar.setVisibility(View.VISIBLE);
+            loginViewModel.register(usernameEditText.getText().toString(),
+                    passwordEditText.getText().toString());
+        });
+
+    }
+
+    private void get_bt_device(String username)
+    {
+        Intent intent = new Intent(this, BluetoothActivity.class);
+        intent.putExtra("username", username);
+        this.startActivity(intent);
     }
 
     private void updateUiWithUser(LoggedInUserView model)

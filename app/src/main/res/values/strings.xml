@@ -40,8 +40,6 @@
 
     <string name="deviceLabel">Device: </string>
 
-    <string name="UIDDLabel">UIDD: </string>
-    <string name="defaultUIDD">00000000000000000000000000000000</string>
     <string name="userNameLabel">Username: </string>
     <string name="defaultUserName">placeholder</string>
     <string name="passwordLabel">Password: </string>
@@ -52,14 +50,18 @@
 
     <!-- Login Activity Strings -->
     <string name="title_activity_login">LoginActivity</string>
-    <string name="prompt_email">Email</string>
+    <string name="prompt_username">Username</string>
     <string name="prompt_password">Password</string>
-    <string name="action_sign_in">Sign in or register</string>
-    <string name="action_sign_in_short">Sign in</string>
+    <string name="action_sign_in">Sign in</string>
+    <string name="action_register">Register</string>
     <string name="welcome">"Welcome !"</string>
     <string name="invalid_username">Not a valid username</string>
-    <string name="invalid_password">Password must be >5 characters</string>
+    <string name="invalid_password">Password must be >8 characters</string>
     <string name="login_failed">"Login failed"</string>
+    <string name="disconnectedInfo">Sensor disconnected</string>
+    <string name="permissionError">Could not acquire bletooth permissions. Try granting them manually</string>
+    <string name="connectedFailure">Failed connetcint to sensor</string>
+    <string name="connectedInfo">Connected to sensor</string>
     <!-- Login Activity Strings -->
 
     <string-array name="available_activities">

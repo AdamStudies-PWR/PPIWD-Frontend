@@ -250,31 +250,6 @@
 
             </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/UIDDLabel"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:gravity="center|start"
-                    android:text="@string/UIDDLabel" />
-
-                <TextView
-                    android:id="@+id/UIDDText"
-                    style="@android:style/Widget.EditText"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="2"
-                    android:background="@null"
-                    android:clickable="true"
-                    android:text="@string/defaultUIDD" />
-
-            </LinearLayout>
-
             <Button
                 android:id="@+id/logoutButton"
                 android:layout_width="wrap_content"

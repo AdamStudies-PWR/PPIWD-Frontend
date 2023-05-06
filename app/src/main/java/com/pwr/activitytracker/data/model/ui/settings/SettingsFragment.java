@@ -38,7 +38,6 @@ public class SettingsFragment extends Fragment
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
-        binding.UIDDText.setOnClickListener(this::copyUidd);
         binding.showPasswordButton.setOnTouchListener(this::showHidePassword);
         binding.changePasswordButton.setOnClickListener(this::changePassword);
         binding.logoutButton.setOnClickListener(this::logout);
@@ -49,16 +48,6 @@ public class SettingsFragment extends Fragment
     {
         super.onDestroyView();
         binding = null;
-    }
-
-    public void copyUidd(View view)
-    {
-        TextView uiddView = requireView().findViewById(R.id.UIDDText);
-        ClipboardManager clipboard = getSystemService(requireContext(), ClipboardManager.class);
-        ClipData clip = ClipData.newPlainText("UIDD", uiddView.getText());
-        assert clipboard != null;
-        clipboard.setPrimaryClip(clip);
-        Toast.makeText(requireContext(), R.string.UIDDCopied, Toast.LENGTH_SHORT).show();
     }
 
     public boolean showHidePassword(View view, MotionEvent motionEvent)
