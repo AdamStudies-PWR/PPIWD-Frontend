@@ -7,7 +7,8 @@ Frontend projektu na Pozyskiwanie, przetwarzanie i wizualizację danych
 ## Skład grupy
 **Szef** : Adam Krizar\
 **dev 1** : Jakub Marchwiany\
-**dev 2** : Izabela Kozłowska
+**dev 2** : Izabela Kozłowska\
+**dev 3** : Michał Kalina
 
 ## Wymagania projektu:
 Android 9.0 +
