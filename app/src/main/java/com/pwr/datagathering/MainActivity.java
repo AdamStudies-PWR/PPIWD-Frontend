@@ -23,9 +23,12 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,9 +36,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.mbientlab.metawear.MetaWearBoard;
 import com.mbientlab.metawear.UnsupportedModuleException;
@@ -68,6 +74,10 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     private SharedPreferences settings;
     private String deviceName = "MetaWear";
 
+    private Set<BluetoothDevice> pairedDevices = null;
+
+    private BluetoothDevice selectedDevice;
+
     public static Task<Void> reconnect(final MetaWearBoard board)
     {
         return board.connectAsync()
@@ -97,8 +107,8 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -109,6 +119,37 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         getApplicationContext().bindService(new Intent(this, BtleService.class),
                 this, BIND_AUTO_CREATE);
         loadUserPrefs();
+
+        ListView listView = findViewById(R.id.listview);
+        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (!arePermissionsGranted()) {
+            requestBluetoothPermission();
+            return;
+        }
+
+        try {
+            pairedDevices = bluetoothAdapter.getBondedDevices();
+        } catch (SecurityException exception) {
+            Log.e("BLUETOOTH", "Error granting permission: " + exception.toString());
+            Toast.makeText(getApplicationContext(), R.string.permissionError, Toast.LENGTH_SHORT).show();
+        }
+        List<String> devicesNames = new ArrayList<>();
+        if(pairedDevices !=null){
+            devicesNames = pairedDevices.stream().map(BluetoothDevice::getName).collect(Collectors.toList());
+        }
+
+        ArrayAdapter arrayAdapter = new ArrayAdapter(getApplicationContext(), android.R.layout.simple_list_item_1, devicesNames);
+        listView.setAdapter(arrayAdapter);
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                selectedDevice = nthElement(pairedDevices, position);
+                connectToSensor();
+            }
+        });
+
+
     }
 
     private void loadUserPrefs()
@@ -158,30 +199,12 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
     private void connectToSensor()
     {
-        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (!arePermissionsGranted())
-        {
-            requestBluetoothPermission();
-            return;
+        //TODO: Adam Kizar sprawdź plis czy to jest git, bo  ie do konca ogarniam ta metode @mkalina
+        if(selectedDevice!=null) {
+            connectToDevice(selectedDevice);
         }
-
-        try
-        {
-            Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
-
-            for (BluetoothDevice device : pairedDevices)
-            {
-                // IMPORTANT TODO: This works, but will it work for all of them or just my specific one?
-                if (Objects.equals(device.getName(), deviceName))
-                {
-                    connectToDevice(device);
-                    break;
-                }
-            }
-        }
-        catch (SecurityException exception)
-        {
-            Log.e("BLUETOOTH", "Error granting permission: " + exception.toString());
+        else {
+            Log.e("BLUETOOTH", "Error, device is null");
             Toast.makeText(getApplicationContext(), R.string.permissionError, Toast.LENGTH_SHORT).show();
         }
     }
@@ -390,7 +413,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     public void onServiceConnected(ComponentName componentName, IBinder service)
     {
         serviceBinder = (BtleService.LocalBinder) service;
-        connectToSensor();
+        //connectToSensor(); TODO: Panie Adamie, mogę to usunąć? @mkalina
     }
 
     @Override
@@ -398,5 +421,23 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     {
         Toast.makeText(getApplicationContext(), R.string.disconnectedInfo, Toast.LENGTH_SHORT)
                 .show();
+    }
+
+    /**
+     * Return an element selected by position in iteration order.
+     * @param data The source from which an element is to be selected
+     * @param n The index of the required element. If it is not in the
+     * range of elements of the iterable, the method returns null.
+     * @return The selected element.
+     */
+    public static final <T> T nthElement(Iterable<T> data, int n){
+        int index = 0;
+        for(T element : data){
+            if(index == n){
+                return element;
+            }
+            index++;
+        }
+        return null;
     }
 }

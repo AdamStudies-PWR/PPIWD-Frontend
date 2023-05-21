@@ -39,4 +39,8 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    //implementation 'com.mbientlab.bletoolbox:scanner:0.3.2'//tu masz repo z dok: https://github.com/mbientlab/BleToolbox
+    //implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'// to masz z org repo
+
+    //implementation 'no.nordicsemi.android:dfu:2.3.0'
 }

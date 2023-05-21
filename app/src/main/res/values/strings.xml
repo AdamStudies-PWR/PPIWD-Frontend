@@ -29,4 +29,12 @@
     <string name="btNoPermission">Permission denied, please grant manually in settings</string>
     <string name="permissionError">Error connecting to device, check permissions</string>
 
+    <string name="title_firmware_update">Firmware Update</string>
+    <string name="title_warning">Warning</string>
+    <string name="title_error">Error</string>
+    <string name="title_select_device">Select Device</string>
+    <string name="title_connecting">Connecting</string>
+    <string name="title_reconnect_attempt">Reconnecting</string>
+
+
 </resources>
