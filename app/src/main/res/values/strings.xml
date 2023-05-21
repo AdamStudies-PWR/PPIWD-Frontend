@@ -12,8 +12,6 @@
     <string name="randomnessDefault">2000</string>
     <string name="csvNameLabel">CSV name:</string>
     <string name="csvNameDefault">training_data</string>
-    <string name="deviceNameLabel">Device name:</string>
-    <string name="deviceNameDefault">MetaWear</string>
 
     <string name="connectedInfo">Sensor connected</string>
     <string name="disconnectedInfo">Sensor disconnected</string>

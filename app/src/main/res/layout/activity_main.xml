@@ -19,14 +19,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <ListView
-            android:layout_width="328dp"
-            android:layout_height="115dp"
-            tools:layout_editor_absoluteX="8dp"
-            tools:layout_editor_absoluteY="167dp"
-            android:id="@+id/listview"
-            tools:ignore="MissingConstraints" />
-
         <TextView
             android:id="@+id/sensorName"
             android:layout_width="wrap_content"
@@ -67,6 +59,28 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:orientation="vertical" >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/textView4"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="10dp"
+                    android:text="Select BT device from the list" />
+
+                <ListView
+                    android:id="@+id/listview"
+                    android:layout_width="328dp"
+                    android:layout_height="115dp"
+                    tools:ignore="MissingConstraints"
+                    tools:layout_editor_absoluteX="8dp"
+                    android:layout_marginBottom="5dp"
+                    tools:layout_editor_absoluteY="167dp" />
+            </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/userInputInterval"
@@ -143,21 +157,6 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-                <TextView
-                    android:id="@+id/DeviceNameLabel"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/deviceNameLabel" />
-
-                <EditText
-                    android:id="@+id/DeviceNameText"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:ems="10"
-                    android:inputType="textPersonName"
-                    android:text="@string/deviceNameDefault" />
             </LinearLayout>
 
             <Button

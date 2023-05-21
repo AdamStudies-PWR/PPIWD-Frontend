@@ -72,7 +72,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
     private static DeviceController deviceController;
     private SharedPreferences settings;
-    private String deviceName = "MetaWear";
 
     private Set<BluetoothDevice> pairedDevices = null;
 
@@ -168,10 +167,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         EditText csvTextView = findViewById(R.id.CsvText);
         filename = settings.getString("csv", filename);
         csvTextView.setText(filename);
-
-        EditText deviceTextView = findViewById(R.id.DeviceNameText);
-        deviceName = settings.getString("sensor", deviceName);
-        deviceTextView.setText(deviceName);
     }
 
     @Override
@@ -235,10 +230,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         EditText csvTextView = findViewById(R.id.CsvText);
         filename = String.valueOf(csvTextView.getText());
         editor.putString("csv", filename);
-
-        EditText deviceTextView = findViewById(R.id.DeviceNameText);
-        deviceName = String.valueOf(deviceTextView.getText());
-        editor.putString("sensor", deviceName);
 
         editor.apply();
     }
