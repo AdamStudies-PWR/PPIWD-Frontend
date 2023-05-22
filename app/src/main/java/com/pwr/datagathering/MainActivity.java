@@ -55,6 +55,7 @@ import bolts.Task;
 public class MainActivity extends AppCompatActivity implements ServiceConnection,
         DefaultLifecycleObserver
 {
+    private final String TAG = "LOG::MainActivity";
     private final String PREFERENCES_KEY = "user-prefs-key";
     private BtleService.LocalBinder serviceBinder;
     private MetaWearBoard sensorBoard;
@@ -121,34 +122,34 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
         ListView listView = findViewById(R.id.listview);
         BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (!arePermissionsGranted()) {
+        if (!arePermissionsGranted())
+        {
             requestBluetoothPermission();
             return;
         }
 
-        try {
+        try
+        {
             pairedDevices = bluetoothAdapter.getBondedDevices();
-        } catch (SecurityException exception) {
+        }
+        catch (SecurityException exception)
+        {
             Log.e("BLUETOOTH", "Error granting permission: " + exception.toString());
             Toast.makeText(getApplicationContext(), R.string.permissionError, Toast.LENGTH_SHORT).show();
         }
         List<String> devicesNames = new ArrayList<>();
-        if(pairedDevices !=null){
+        if(pairedDevices !=null)
+        {
             devicesNames = pairedDevices.stream().map(BluetoothDevice::getName).collect(Collectors.toList());
         }
 
         ArrayAdapter arrayAdapter = new ArrayAdapter(getApplicationContext(), android.R.layout.simple_list_item_1, devicesNames);
         listView.setAdapter(arrayAdapter);
 
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                selectedDevice = nthElement(pairedDevices, position);
-                connectToSensor();
-            }
+        listView.setOnItemClickListener((parent, view, position, id) -> {
+            selectedDevice = nthElement(pairedDevices, position);
+            connectToSensor();
         });
-
-
     }
 
     private void loadUserPrefs()
@@ -358,7 +359,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         File file = new File(documents, filename + ".csv");
 
         int counter = 1;
-        while (file.isFile() || file.isDirectory() || file.exists())
+        while (!isFileValid(file))
         {
             file = new File(documents, filename + "_" + counter + ".csv");
             counter++;
@@ -374,6 +375,8 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                         Toast.LENGTH_SHORT).show();
                 return;
             }
+
+            Log.d(TAG, "writing to file: " +file.getPath());
 
             stream = new FileOutputStream(file, true);
             OutputStreamWriter writer = new OutputStreamWriter(stream);
@@ -398,6 +401,17 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             Toast.makeText(getApplicationContext(), R.string.writeFailure, Toast.LENGTH_SHORT)
                     .show();
         }
+    }
+
+    private boolean isFileValid(File file)
+    {
+        if (file.isDirectory()) return false;
+        if (file.exists()) return false;
+
+        File absoluteFile = getBaseContext().getFileStreamPath(file.getAbsolutePath());
+        if (absoluteFile.exists()) return false;
+
+        return true;
     }
 
     @Override
