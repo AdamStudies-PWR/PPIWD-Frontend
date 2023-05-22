@@ -12,8 +12,6 @@
     <string name="randomnessDefault">2000</string>
     <string name="csvNameLabel">CSV name:</string>
     <string name="csvNameDefault">training_data</string>
-    <string name="deviceNameLabel">Device name:</string>
-    <string name="deviceNameDefault">MetaWear</string>
 
     <string name="connectedInfo">Sensor connected</string>
     <string name="disconnectedInfo">Sensor disconnected</string>
@@ -28,5 +26,13 @@
     <string name="dataSaved">Data saved in: </string>
     <string name="btNoPermission">Permission denied, please grant manually in settings</string>
     <string name="permissionError">Error connecting to device, check permissions</string>
+
+    <string name="title_firmware_update">Firmware Update</string>
+    <string name="title_warning">Warning</string>
+    <string name="title_error">Error</string>
+    <string name="title_select_device">Select Device</string>
+    <string name="title_connecting">Connecting</string>
+    <string name="title_reconnect_attempt">Reconnecting</string>
+
 
 </resources>
