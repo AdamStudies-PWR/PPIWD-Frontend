@@ -408,9 +408,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         if (file.isDirectory()) return false;
         if (file.exists()) return false;
 
-        File absoluteFile = getBaseContext().getFileStreamPath(file.getAbsolutePath());
-        if (absoluteFile.exists()) return false;
-
         return true;
     }
 

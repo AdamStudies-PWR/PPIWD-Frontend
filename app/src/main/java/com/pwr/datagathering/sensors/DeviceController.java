@@ -34,6 +34,7 @@ public class DeviceController
             Log.i("DeviceController", sensorData.toString());
             sensorDataList.add(sensorData);
         })).continueWith(task -> {
+            sensorDataList.clear();
             sensorFusion.eulerAngles().start();
             sensorFusion.start();
             startTime = System.currentTimeMillis();
