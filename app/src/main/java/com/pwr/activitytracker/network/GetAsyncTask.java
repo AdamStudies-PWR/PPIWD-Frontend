@@ -18,17 +18,18 @@ import es.dmoral.toasty.Toasty;
 public class GetAsyncTask extends AsyncTask<Void, Void, Wrapper> {
     private MainActivity activity;
     private AsyncCallBack asyncCallBack;
-
+ private String requestName;
     private String urlDomainName;
     private String urlPath;
     private Toast toastLoading = null;
     private Toast toastResponse = null;
 
-    public GetAsyncTask setInstance(Context context, String urlDomainName, String urlPath) {
+    public GetAsyncTask setInstance(String requestName,Context context, String urlDomainName, String urlPath) {
         this.activity = (MainActivity) context;
         asyncCallBack = (AsyncCallBack) context;
         this.urlDomainName = urlDomainName;
         this.urlPath = urlPath;
+        this.requestName = requestName;
         return this;
     }
 
@@ -94,6 +95,6 @@ public class GetAsyncTask extends AsyncTask<Void, Void, Wrapper> {
     @Override
     protected void onPostExecute(Wrapper w) {
         super.onPostExecute(w);
-        asyncCallBack.processRespond(w.stringResponse, w.isResponseSuccess);
+        asyncCallBack.processRespond(this.requestName,w.stringResponse, w.isResponseSuccess);
     }
 }
