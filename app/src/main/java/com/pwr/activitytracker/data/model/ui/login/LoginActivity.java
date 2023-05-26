@@ -2,6 +2,7 @@ package com.pwr.activitytracker.data.model.ui.login;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -21,10 +22,13 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.google.gson.Gson;
 import com.pwr.activitytracker.BluetoothActivity;
+import com.pwr.activitytracker.MainActivity;
 import com.pwr.activitytracker.R;
 import com.pwr.activitytracker.databinding.ActivityLoginBinding;
 import com.pwr.activitytracker.network.AsyncCallBack;
 import com.pwr.activitytracker.network.PostAsyncTask;
+import com.pwr.activitytracker.network.models.LoginCredentials;
+import com.pwr.activitytracker.network.models.LoginUserData;
 
 import es.dmoral.toasty.Toasty;
 
@@ -40,8 +44,7 @@ public class LoginActivity extends AppCompatActivity implements AsyncCallBack {
         binding = ActivityLoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        loginViewModel = new ViewModelProvider(this, new LoginViewModelFactory())
-                .get(LoginViewModel.class);
+        loginViewModel = new ViewModelProvider(this, new LoginViewModelFactory()).get(LoginViewModel.class);
 
         final EditText usernameEditText = binding.username;
         final EditText passwordEditText = binding.password;
@@ -95,43 +98,56 @@ public class LoginActivity extends AppCompatActivity implements AsyncCallBack {
 
             @Override
             public void afterTextChanged(Editable s) {
-                loginViewModel.loginDataChanged(usernameEditText.getText().toString(),
-                        passwordEditText.getText().toString());
+                loginViewModel.loginDataChanged(usernameEditText.getText().toString(), passwordEditText.getText().toString());
             }
         };
         usernameEditText.addTextChangedListener(afterTextChangedListener);
         passwordEditText.addTextChangedListener(afterTextChangedListener);
         passwordEditText.setOnEditorActionListener((v, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_DONE) {
-                loginViewModel.login(usernameEditText.getText().toString(),
-                        passwordEditText.getText().toString());
+                loginViewModel.login(usernameEditText.getText().toString(), passwordEditText.getText().toString());
             }
             return false;
         });
 
         loginButton.setOnClickListener(v -> {
-//            loadingProgressBar.setVisibility(View.VISIBLE);
-//            loginViewModel.login(usernameEditText.getText().toString(),
-//                    passwordEditText.getText().toString());
-            LoginCredentials newUserCredentials = new LoginCredentials(usernameEditText.getText().toString(),
-                    passwordEditText.getText().toString());
+            LoginCredentials newUserCredentials = new LoginCredentials(usernameEditText.getText().toString(), passwordEditText.getText().toString());
             Gson gson = new Gson();
             String requestBody = gson.toJson(newUserCredentials);
 
-            new PostAsyncTask().setInstance("login", LoginActivity.this, "http://10.0.2.2:5242", "/User/Authorize", requestBody).execute();
-
+            new PostAsyncTask().setInstance("login", LoginActivity.this, "http://10.0.2.2:5242", "/User/Authorize", requestBody, false).execute();
         });
 
         registerButton.setOnClickListener(v -> {
-            LoginCredentials newUserCredentials = new LoginCredentials(usernameEditText.getText().toString(),
-                    passwordEditText.getText().toString());
-
+            LoginCredentials newUserCredentials = new LoginCredentials(usernameEditText.getText().toString(), passwordEditText.getText().toString());
 
             Gson gson = new Gson();
             String requestBody = gson.toJson(newUserCredentials);
 
-            new PostAsyncTask().setInstance("register", LoginActivity.this, "http://10.0.2.2:5242", "/User/Register", requestBody).execute();
+            new PostAsyncTask().setInstance("register", LoginActivity.this, "http://10.0.2.2:5242", "/User/Register", requestBody, false).execute();
         });
+
+        auto_login();
+    }
+
+    private void auto_login() {
+        SharedPreferences settings = getApplicationContext().getSharedPreferences("credentials", 0);
+        String login = settings.getString("login", "");
+        String password = settings.getString("password", "");
+
+        Log.i("login", login);
+        Log.i("password", password);
+
+        if (login != "" & password != "") {
+            LoginCredentials newUserCredentials = new LoginCredentials(login, password);
+
+            Gson gson = new Gson();
+            String requestBody = gson.toJson(newUserCredentials);
+
+
+            new PostAsyncTask().setInstance("auto-login", LoginActivity.this, "http://10.0.2.2:5242", "/User/Authorize", requestBody, false).execute();
+        }
+
     }
 
     private void get_bt_device(String username) {
@@ -161,11 +177,47 @@ public class LoginActivity extends AppCompatActivity implements AsyncCallBack {
                 passwordEditText.setText("");
                 Toasty.success(LoginActivity.this, "New account added successfully", Toast.LENGTH_SHORT, true).show();
             }
-        }else if(requestName == "login"){
-            if(isResponseSuccess){
+        } else if (requestName == "login") {
+            if (isResponseSuccess) {
                 Toasty.success(LoginActivity.this, "Login successful", Toast.LENGTH_SHORT, true).show();
-                Log.i("info",respondData);
+
+
+                Gson gson = new Gson();
+                LoginUserData userData = gson.fromJson(respondData, LoginUserData.class);
+
+
+                // Save credentials to SharedPreferences
+                SharedPreferences settings = getApplicationContext().getSharedPreferences("credentials", 0);
+                SharedPreferences.Editor editor = settings.edit();
+                editor.putString("login", String.valueOf(usernameEditText.getText()));
+                editor.putString("password", String.valueOf(passwordEditText.getText()));
+                editor.putString("token", String.valueOf(userData.token));
+                editor.apply();
+
+
+                Intent incomingIntent = getIntent();
+                Intent intent = new Intent(this, MainActivity.class);
+                intent.putExtra("username", incomingIntent.getStringExtra("username"));
+//                intent.putExtra("sensor", device);
+                this.startActivity(intent);
+
             }
+        } else if (requestName == "auto-login") {
+            if (isResponseSuccess) {
+                Intent incomingIntent = getIntent();
+                Intent intent = new Intent(this, MainActivity.class);
+                intent.putExtra("username", incomingIntent.getStringExtra("username"));
+//                intent.putExtra("sensor", device);
+                this.startActivity(intent);
+            }else{
+                SharedPreferences settings = getApplicationContext().getSharedPreferences("credentials", 0);
+                SharedPreferences.Editor editor = settings.edit();
+                editor.putString("login", "");
+                editor.putString("password", "");
+                editor.putString("token", "");
+                editor.apply();
+            }
+        } else {
 
         }
     }
