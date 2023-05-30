@@ -34,9 +34,9 @@
     <string name="sensorSectionLabel">Sensor</string>
 
     <string name="ipLabel">Server IP: </string>
-    <string name="defaultIp">192.168.1.190</string>
+    <string name="defaultIp">10.0.2.2</string>
     <string name="portLabel">Server port:</string>
-    <string name="defaultPort">3000</string>
+    <string name="defaultPort">5242</string>
 
     <string name="deviceLabel">Device: </string>
 

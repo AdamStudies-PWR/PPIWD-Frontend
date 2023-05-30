@@ -1,4 +1,4 @@
-package com.pwr.activitytracker.data.model.ui.login;
+package com.pwr.activitytracker.data.model.ui.train.login;
 
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;

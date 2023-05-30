@@ -65,6 +65,8 @@ public class LoginRepository
     {
         // handle login
         Result<LoggedInUser> result = dataSource.register(username, password);
+        
+
         if (result instanceof Result.Success)
         {
             setLoggedInUser(((Result.Success<LoggedInUser>) result).getData());
