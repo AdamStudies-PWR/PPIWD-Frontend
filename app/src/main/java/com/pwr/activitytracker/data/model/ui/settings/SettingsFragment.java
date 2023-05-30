@@ -5,7 +5,10 @@ import static androidx.core.content.ContextCompat.getSystemService;
 import android.annotation.SuppressLint;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
 import android.view.LayoutInflater;
@@ -25,6 +28,7 @@ import com.pwr.activitytracker.databinding.FragmentSettingsBinding;
 
 public class SettingsFragment extends Fragment
 {
+    private final String PREFERENCES_KEY = "user-prefs-key";
     private FragmentSettingsBinding binding;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -38,9 +42,56 @@ public class SettingsFragment extends Fragment
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
+        loadSettings();
+
         binding.showPasswordButton.setOnTouchListener(this::showHidePassword);
         binding.changePasswordButton.setOnClickListener(this::changePassword);
         binding.logoutButton.setOnClickListener(this::logout);
+        binding.ipSettingsText.addTextChangedListener(new TextWatcher()
+        {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+
+            @Override
+            public void afterTextChanged(Editable editable)
+            {
+                saveSettingString("IP", String.valueOf(binding.ipSettingsText.getText()));
+            }
+        });
+
+        binding.portSettingsText.addTextChangedListener(new TextWatcher()
+        {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+
+            @Override
+            public void afterTextChanged(Editable editable)
+            {
+                saveSettingString("PORT", String.valueOf(binding.portSettingsText.getText()));
+            }
+        });
+    }
+
+    private void saveSettingString(String key, String value)
+    {
+        SharedPreferences settings = requireContext().getSharedPreferences(PREFERENCES_KEY, 0);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putString(key, value);
+        editor.apply();
+    }
+
+    private void loadSettings()
+    {
+        SharedPreferences settings = requireContext().getSharedPreferences(PREFERENCES_KEY, 0);
+
+        binding.ipSettingsText.setText(settings.getString("IP", "10.0.2.2"));
+        binding.portSettingsText.setText(settings.getString("PORT", "5242"));
     }
 
     @Override

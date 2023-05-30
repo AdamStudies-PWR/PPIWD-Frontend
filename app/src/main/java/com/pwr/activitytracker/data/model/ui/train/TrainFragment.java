@@ -234,7 +234,8 @@ public class TrainFragment extends Fragment implements ServiceConnection
     public void onServiceConnected(ComponentName componentName, IBinder service)
     {
         serviceBinder = (BtleService.LocalBinder) service;
-//        getDevice();
+        // Comment this to not use bt device
+        // getDevice();
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.pwr.activitytracker.data.model.ui.login;
+package com.pwr.activitytracker.data.model.ui.train.login;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -28,19 +28,27 @@ import com.pwr.activitytracker.network.PostAsyncTask;
 import com.pwr.activitytracker.network.models.LoginCredentials;
 import com.pwr.activitytracker.network.models.LoginUserData;
 
+import java.util.Objects;
+
 import es.dmoral.toasty.Toasty;
 
 public class LoginActivity extends AppCompatActivity implements AsyncCallBack {
 
+    private final String PREFERENCES_KEY = "user-prefs-key";
     private LoginViewModel loginViewModel;
     private ActivityLoginBinding binding;
 
+    private String IP = "10.0.2.2";
+    private String PORT = "5242";
+
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
 
         binding = ActivityLoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        loadServerSettings();
 
         loginViewModel = new ViewModelProvider(this, new LoginViewModelFactory()).get(LoginViewModel.class);
 
@@ -106,23 +114,57 @@ public class LoginActivity extends AppCompatActivity implements AsyncCallBack {
         });
 
         loginButton.setOnClickListener(v -> {
+            saveServerSettings();
             LoginCredentials newUserCredentials = new LoginCredentials(usernameEditText.getText().toString(), passwordEditText.getText().toString());
             Gson gson = new Gson();
             String requestBody = gson.toJson(newUserCredentials);
 
-            new PostAsyncTask().setInstance("login", LoginActivity.this, "http://10.0.2.2:5242", "/User/Authorize", requestBody, false).execute();
+            new PostAsyncTask().setInstance("login", LoginActivity.this, "http://" + IP + ":" + PORT, "/User/Authorize", requestBody, false).execute();
         });
 
         registerButton.setOnClickListener(v -> {
+            saveServerSettings();
             LoginCredentials newUserCredentials = new LoginCredentials(usernameEditText.getText().toString(), passwordEditText.getText().toString());
 
             Gson gson = new Gson();
             String requestBody = gson.toJson(newUserCredentials);
 
-            new PostAsyncTask().setInstance("register", LoginActivity.this, "http://10.0.2.2:5242", "/User/Register", requestBody, false).execute();
+            new PostAsyncTask().setInstance("register", LoginActivity.this, "http://" + IP + ":" + PORT, "/User/Register", requestBody, false).execute();
         });
 
         auto_login();
+    }
+
+    private void loadServerSettings()
+    {
+
+        SharedPreferences settings = getApplicationContext().getSharedPreferences(PREFERENCES_KEY, 0);
+
+        EditText ipText = requireViewById(R.id.quickIp);
+        EditText portText = requireViewById(R.id.quickPort);
+
+        IP = settings.getString("IP", IP);
+        PORT = settings.getString("PORT", PORT);
+
+        ipText.setText(IP);
+        portText.setText(PORT);
+    }
+
+    private void saveServerSettings()
+    {
+        SharedPreferences settings = getApplicationContext().getSharedPreferences(PREFERENCES_KEY, 0);
+        SharedPreferences.Editor editor = settings.edit();
+
+        EditText ipText = requireViewById(R.id.quickIp);
+        IP = String.valueOf(ipText.getText());
+
+        EditText portText = requireViewById(R.id.quickPort);
+        PORT = String.valueOf(portText.getText());
+
+        editor.putString("IP", IP);
+        editor.putString("PORT", PORT);
+
+        editor.apply();
     }
 
     private void auto_login() {
@@ -130,7 +172,7 @@ public class LoginActivity extends AppCompatActivity implements AsyncCallBack {
         String token = settings.getString("token", "");
 
         if (!token.equals("")) {
-            new GetAsyncTask().setInstance("auto-login", LoginActivity.this, "http://10.0.2.2:5242", "/User", true).execute();
+            new GetAsyncTask().setInstance("auto-login", LoginActivity.this, "http://" + IP + ":" + PORT, "/User", true).execute();
         }
     }
 
@@ -176,20 +218,28 @@ public class LoginActivity extends AppCompatActivity implements AsyncCallBack {
                 editor.apply();
 
 
+                // Uncomment this to use bluetooth device connection
+                //Intent intent = new Intent(this, BluetoothActivity.class);
+
+                // Uncomment this to skip bluetooth device connection
                 Intent intent = new Intent(this, MainActivity.class);
+
                 intent.putExtra("username", userData.username);
-//                intent.putExtra("sensor", device);
                 this.startActivity(intent);
 
             }
-        } else if (requestName == "auto-login") {
+        } else if (Objects.equals(requestName, "auto-login")) {
             if (isResponseSuccess) {
                 Gson gson = new Gson();
                 LoginUserData userData = gson.fromJson(respondData, LoginUserData.class);
 
-                Intent intent = new Intent(this, MainActivity.class);
+                // Uncomment this to use bluetooth device connection
+                Intent intent = new Intent(this, BluetoothActivity.class);
+
+                // Uncomment this to skip bluetooth device connection
+                // Intent intent = new Intent(this, MainActivity.class);
+
                 intent.putExtra("username", userData.username);
-//                intent.putExtra("sensor", device);
                 this.startActivity(intent);
             } else {
                 SharedPreferences settings = getApplicationContext().getSharedPreferences("credentials", 0);

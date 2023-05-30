@@ -36,7 +36,7 @@
             android:theme="@style/Theme.ActivityTracker.NoActionBar"
             />
         <activity
-            android:name=".data.model.ui.login.LoginActivity"
+            android:name=".data.model.ui.train.login.LoginActivity"
             android:exported="true"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.NoActionBar">
