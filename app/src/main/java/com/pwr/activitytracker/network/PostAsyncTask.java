@@ -98,8 +98,6 @@ public class PostAsyncTask extends AsyncTask<Void, Void, Wrapper> {
             } else if (statusCode == 401) {
                 SharedPreferences settings = activity.getApplicationContext().getSharedPreferences("credentials", 0);
                 SharedPreferences.Editor editor = settings.edit();
-                editor.putString("login", "");
-                editor.putString("password", "");
                 editor.putString("token", "");
                 editor.apply();
 
@@ -131,7 +129,7 @@ public class PostAsyncTask extends AsyncTask<Void, Void, Wrapper> {
                 return new Wrapper(response.toString(), false);
             }
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             activity.runOnUiThread(() -> {
                 toastLoading.cancel();
                 toastResponse = Toasty.error(activity, e.toString(), Toast.LENGTH_SHORT, true);
