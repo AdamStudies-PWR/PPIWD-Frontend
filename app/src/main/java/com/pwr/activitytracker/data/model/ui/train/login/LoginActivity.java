@@ -336,6 +336,9 @@ public class LoginActivity extends AppCompatActivity implements ServiceConnectio
                 listView.setVisibility(View.GONE);//to nie dziala chyba dlatego ze jest tu linear view.
                 //Ale w sumie to nie musi dzialac, moze poprawie gui aby to sie jakos fajnie prezentowalo
                 //Update: dziala
+                TextView textView = findViewById(R.id.textViewSelectDevice);
+                textView.setVisibility(View.GONE);//to nie dziala chyba dlatego ze jest tu linear view.
+
             }
             return null;
         });
