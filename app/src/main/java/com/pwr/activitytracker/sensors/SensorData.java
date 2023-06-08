@@ -11,6 +11,26 @@ public class SensorData
     private String roll = "";
     private String yaw = "";
 
+    public String getTime() {
+        return time;
+    }
+
+    public String getHeading() {
+        return heading;
+    }
+
+    public String getPitch() {
+        return pitch;
+    }
+
+    public String getRoll() {
+        return roll;
+    }
+
+    public String getYaw() {
+        return yaw;
+    }
+
     public SensorData()
     {}
 

@@ -22,12 +22,21 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import com.google.gson.Gson;
 import com.mbientlab.metawear.MetaWearBoard;
 import com.mbientlab.metawear.UnsupportedModuleException;
 import com.mbientlab.metawear.android.BtleService;
 import com.pwr.activitytracker.R;
 import com.pwr.activitytracker.databinding.FragmentTrainBinding;
+import com.pwr.activitytracker.network.PostAsyncTask;
+import com.pwr.activitytracker.network.models.Measurement;
+import com.pwr.activitytracker.network.models.SensorData;
 import com.pwr.activitytracker.sensors.DeviceController;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 public class TrainFragment extends Fragment implements ServiceConnection
 {
@@ -45,6 +54,8 @@ public class TrainFragment extends Fragment implements ServiceConnection
 
     private DeviceController deviceController;
 
+    private String IP = "10.0.2.2";
+    private String PORT = "5242";
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState)
     {
@@ -161,7 +172,22 @@ public class TrainFragment extends Fragment implements ServiceConnection
         ImageButton pauseButton = requireView().findViewById(R.id.pauseButton);
         pauseButton.setVisibility(View.GONE);
 
-        deviceController.stopMeasurements();
+        List<com.pwr.activitytracker.sensors.SensorData> measurements = deviceController.stopMeasurements();
+        Gson gson = new Gson();
+        Measurement measurement = new Measurement();
+        measurement.setDate(LocalDateTime.now().toString());
+        AtomicInteger duration = new AtomicInteger();
+        List<SensorData> m = measurements.stream().
+                map(e->{
+                    duration.addAndGet(Integer.parseInt(e.getTime()));
+                    return new SensorData("sensor",Float.valueOf(e.getPitch()),Float.valueOf(e.getRoll()),Float.valueOf(e.getRoll()));
+                }
+    ).collect(Collectors.toList());
+        measurement.setDuration(duration.get());
+        measurement.setSensorDatas(m);
+        String requestBody = gson.toJson(measurement);
+        new PostAsyncTask().setInstance("PostMeasurements", TrainFragment.this.getContext(), "http://" + IP + ":" + PORT, "/Measurements/", requestBody, false).execute();
+
         trainingStarted = false;
         isPaused = false;
         elapsed = 0;
