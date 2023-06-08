@@ -6,4 +6,28 @@
     android:layout_height="match_parent"
     tools:context=".BluetoothActivity">
 
+    <TextView
+        android:id="@+id/textViewSelectDevice"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:layout_weight="1"
+        android:text="@string/please_select_device"
+        android:textSize="28sp"
+        app:layout_constraintBottom_toTopOf="@+id/listview"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_editor_absoluteX="16dp" />
+
+    <ListView
+        android:id="@+id/listview"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/textViewSelectDevice"
+        tools:ignore="MissingConstraints">
+
+    </ListView>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
