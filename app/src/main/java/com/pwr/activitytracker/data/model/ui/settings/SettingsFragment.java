@@ -124,5 +124,6 @@ public class SettingsFragment extends Fragment
     public void logout(View view)
     {
         Toast.makeText(requireContext(), "TODO: Not implemented", Toast.LENGTH_SHORT).show();
+        requireActivity().finish();
     }
 }

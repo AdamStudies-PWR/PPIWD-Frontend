@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -32,11 +33,14 @@ import bolts.Task;
 
 public class BluetoothActivity extends AppCompatActivity implements ServiceConnection
 {
+    private final String PREFERENCES_KEY = "user-prefs-key";
+
     private BtleService.LocalBinder serviceBinder;
     private MetaWearBoard sensorBoard;
 
     private Set<BluetoothDevice> pairedDevices = null;
     private BluetoothDevice selectedDevice;
+    private String deviceName = "";
 
     private ListView listView;
 
@@ -68,20 +72,27 @@ public class BluetoothActivity extends AppCompatActivity implements ServiceConne
 
         listView.setOnItemClickListener((parent, view, position, id) -> {
             selectedDevice = nthElement(pairedDevices, position);
+            saveDeviceName(selectedDevice.getName());
             connectToSensor();
         });
+
+        deviceName = loadPreviousDevice();
 
         if (!arePermissionsGranted())
         {
             requestBluetoothPermission();
         }
-        else
-        {
-            startConnectionProcedure();
-        }
     }
 
-    private void startConnectionProcedure()
+    private void saveDeviceName(String deviceName)
+    {
+        SharedPreferences settings = getApplicationContext().getSharedPreferences(PREFERENCES_KEY, 0);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putString("DEVICE_ID", deviceName);
+        editor.apply();
+    }
+
+    private void startConnectionProcedure(String savedName)
     {
         BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -92,6 +103,7 @@ public class BluetoothActivity extends AppCompatActivity implements ServiceConne
         {
             Log.e("BLUETOOTH", "Error granting permission: " + exception.toString());
             Toast.makeText(getApplicationContext(), R.string.permissionError, Toast.LENGTH_SHORT).show();
+            return;
         }
 
         List<String> devicesNames = new ArrayList<>();
@@ -100,7 +112,16 @@ public class BluetoothActivity extends AppCompatActivity implements ServiceConne
             devicesNames = pairedDevices.stream().map(BluetoothDevice::getName).collect(Collectors.toList());
         }
 
-        ArrayAdapter arrayAdapter = new ArrayAdapter(getApplicationContext(), android.R.layout.simple_list_item_1, devicesNames);
+        if (devicesNames.contains(savedName))
+        {
+            int deviceId = devicesNames.indexOf(savedName);
+            selectedDevice = nthElement(pairedDevices, deviceId);
+            Log.e("UWU", selectedDevice.getName());
+            connectToSensor();
+            return;
+        }
+
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(getApplicationContext(), android.R.layout.simple_list_item_1, devicesNames);
         listView.setAdapter(arrayAdapter);
     }
 
@@ -164,6 +185,12 @@ public class BluetoothActivity extends AppCompatActivity implements ServiceConne
         }
     }
 
+    private String loadPreviousDevice()
+    {
+        SharedPreferences settings = getApplicationContext().getSharedPreferences(PREFERENCES_KEY, 0);
+        return settings.getString("DEVICE_ID", "");
+    }
+
     private void connectToDevice(BluetoothDevice device)
     {
         serviceBinder.removeMetaWearBoard(device); //tutaj jest blad // Jaki błąd?
@@ -213,6 +240,11 @@ public class BluetoothActivity extends AppCompatActivity implements ServiceConne
     public void onServiceConnected(ComponentName componentName, IBinder service)
     {
         serviceBinder = (BtleService.LocalBinder) service;
+
+        if (arePermissionsGranted())
+        {
+            startConnectionProcedure(deviceName);
+        }
     }
 
     @Override
@@ -231,7 +263,7 @@ public class BluetoothActivity extends AppCompatActivity implements ServiceConne
         {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED)
             {
-                startConnectionProcedure();
+                startConnectionProcedure(deviceName);
             }
         }
     }
