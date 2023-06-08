@@ -45,7 +45,6 @@ public class LoginActivity extends AppCompatActivity implements AsyncCallBack
     {
         super.onCreate(savedInstanceState);
 
-        //loadUserPrefs();
         binding = ActivityLoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         loadServerSettings();

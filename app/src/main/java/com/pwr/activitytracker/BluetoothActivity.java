@@ -15,6 +15,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
@@ -42,9 +43,9 @@ public class BluetoothActivity extends AppCompatActivity implements ServiceConne
     public static <T> T nthElement(Iterable<T> data, int n)
     {
         int index = 0;
-        for(T element : data)
+        for (T element : data)
         {
-            if(index == n)
+            if (index == n)
             {
                 return element;
             }
@@ -58,11 +59,6 @@ public class BluetoothActivity extends AppCompatActivity implements ServiceConne
     {
         super.onCreate(savedInstanceState);
 
-        if (!arePermissionsGranted())
-        {
-            requestBluetoothPermission();
-        }
-
         setContentView(R.layout.activity_bluetooth);
 
         getApplicationContext().bindService(new Intent(this, BtleService.class),
@@ -74,6 +70,15 @@ public class BluetoothActivity extends AppCompatActivity implements ServiceConne
             selectedDevice = nthElement(pairedDevices, position);
             connectToSensor();
         });
+
+        if (!arePermissionsGranted())
+        {
+            requestBluetoothPermission();
+        }
+        else
+        {
+            startConnectionProcedure();
+        }
     }
 
     private void startConnectionProcedure()
@@ -90,7 +95,7 @@ public class BluetoothActivity extends AppCompatActivity implements ServiceConne
         }
 
         List<String> devicesNames = new ArrayList<>();
-        if(pairedDevices !=null)
+        if (pairedDevices != null)
         {
             devicesNames = pairedDevices.stream().map(BluetoothDevice::getName).collect(Collectors.toList());
         }
@@ -112,8 +117,7 @@ public class BluetoothActivity extends AppCompatActivity implements ServiceConne
             if (task.isFaulted())
             {
                 return reconnect(board);
-            }
-            else if (task.isCancelled())
+            } else if (task.isCancelled())
             {
                 return task;
             }
@@ -135,11 +139,10 @@ public class BluetoothActivity extends AppCompatActivity implements ServiceConne
 
     private void connectToSensor()
     {
-        if(selectedDevice!=null)
+        if (selectedDevice != null)
         {
             connectToDevice(selectedDevice);
-        }
-        else
+        } else
         {
             Log.e("BLUETOOTH", "Error, device is null");
             Toast.makeText(getApplicationContext(), R.string.permissionError, Toast.LENGTH_SHORT).show();
@@ -152,8 +155,7 @@ public class BluetoothActivity extends AppCompatActivity implements ServiceConne
         {
             return ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT)
                     == PackageManager.PERMISSION_GRANTED;
-        }
-        else
+        } else
         {
             return ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH) == PackageManager.PERMISSION_GRANTED
                     && ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADMIN) == PackageManager.PERMISSION_GRANTED
@@ -211,7 +213,6 @@ public class BluetoothActivity extends AppCompatActivity implements ServiceConne
     public void onServiceConnected(ComponentName componentName, IBinder service)
     {
         serviceBinder = (BtleService.LocalBinder) service;
-        startConnectionProcedure();
     }
 
     @Override
@@ -220,8 +221,18 @@ public class BluetoothActivity extends AppCompatActivity implements ServiceConne
         Toast.makeText(getApplicationContext(), R.string.disconnectedInfo, Toast.LENGTH_SHORT).show();
     }
 
-    private void proceedToActivity()
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults)
     {
-        //TODO: Kwi
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == 1 && (grantResults.length > 0))
+        {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED)
+            {
+                startConnectionProcedure();
+            }
+        }
     }
 }
