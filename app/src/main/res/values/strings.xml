@@ -62,6 +62,7 @@
     <string name="permissionError">Could not acquire bletooth permissions. Try granting them manually</string>
     <string name="connectedFailure">Failed connetcint to sensor</string>
     <string name="connectedInfo">Connected to sensor</string>
+    <string name="please_select_device">Please select device</string>
     <!-- Login Activity Strings -->
 
     <string-array name="available_activities">
