@@ -5,39 +5,39 @@ import java.util.Collection;
 
 public class Measurement
 {
-    public String Date;
-    public int Duration ;
-    public Collection<SensorData> SensorDatas;
+    public String date;
+    public int duration ;
+    public Collection<SensorData> sensorDatas;
 
     public Measurement(String date, int duration) {
-        Date = date;
-        Duration = duration;
+        this.date = date;
+        this.duration = duration;
     }
 
     public Measurement() {
     }
 
     public String getDate() {
-        return Date;
+        return date;
     }
 
     public void setDate(String date) {
-        Date = date;
+        this.date = date;
     }
 
     public int getDuration() {
-        return Duration;
+        return duration;
     }
 
     public void setDuration(int duration) {
-        Duration = duration;
+        this.duration = duration;
     }
 
     public Collection<SensorData> getSensorDatas() {
-        return SensorDatas;
+        return sensorDatas;
     }
 
     public void setSensorDatas(Collection<SensorData> sensorDatas) {
-        SensorDatas = sensorDatas;
+        this.sensorDatas = sensorDatas;
     }
 }
