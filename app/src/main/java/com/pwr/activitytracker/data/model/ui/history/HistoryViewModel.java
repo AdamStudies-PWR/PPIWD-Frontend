@@ -10,7 +10,7 @@ import androidx.lifecycle.ViewModel;
 
 public class HistoryViewModel extends ViewModel {
     private final MutableLiveData<String> mText;
-    private  MutableLiveData<List<HistoryData>> historyData;
+    private MutableLiveData<List<HistoryData>> historyData;
     public HistoryViewModel() {
         mText = new MutableLiveData<>();
         historyData = new MutableLiveData<>();

@@ -1,6 +1,7 @@
 package com.pwr.activitytracker;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.ComponentName;
@@ -12,8 +13,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -42,10 +45,16 @@ public class BluetoothActivity extends AppCompatActivity implements ServiceConne
     private BluetoothDevice selectedDevice;
     private String deviceName = "";
 
+    private static boolean clickable = false;
+
+    private ProgressBar progress;
+
     private ListView listView;
 
     public static <T> T nthElement(Iterable<T> data, int n)
     {
+        if (!clickable) return null;
+
         int index = 0;
         for (T element : data)
         {
@@ -68,6 +77,7 @@ public class BluetoothActivity extends AppCompatActivity implements ServiceConne
         getApplicationContext().bindService(new Intent(this, BtleService.class),
                 this, BIND_AUTO_CREATE);
 
+        progress = findViewById(R.id.progressBar);
         listView = findViewById(R.id.listview);
 
         listView.setOnItemClickListener((parent, view, position, id) -> {
@@ -103,6 +113,7 @@ public class BluetoothActivity extends AppCompatActivity implements ServiceConne
         {
             Log.e("BLUETOOTH", "Error granting permission: " + exception.toString());
             Toast.makeText(getApplicationContext(), R.string.permissionError, Toast.LENGTH_SHORT).show();
+            progress.setVisibility(View.GONE);
             return;
         }
 
@@ -112,17 +123,15 @@ public class BluetoothActivity extends AppCompatActivity implements ServiceConne
             devicesNames = pairedDevices.stream().map(BluetoothDevice::getName).collect(Collectors.toList());
         }
 
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(getApplicationContext(), android.R.layout.simple_list_item_1, devicesNames);
+        listView.setAdapter(arrayAdapter);
+
         if (devicesNames.contains(savedName))
         {
             int deviceId = devicesNames.indexOf(savedName);
             selectedDevice = nthElement(pairedDevices, deviceId);
-            Log.e("UWU", selectedDevice.getName());
             connectToSensor();
-            return;
         }
-
-        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(getApplicationContext(), android.R.layout.simple_list_item_1, devicesNames);
-        listView.setAdapter(arrayAdapter);
     }
 
     @Override
@@ -162,10 +171,15 @@ public class BluetoothActivity extends AppCompatActivity implements ServiceConne
     {
         if (selectedDevice != null)
         {
+            progress.setVisibility(View.VISIBLE);
+            clickable = false;
             connectToDevice(selectedDevice);
-        } else
+        }
+        else
         {
             Log.e("BLUETOOTH", "Error, device is null");
+            progress.setVisibility(View.GONE);
+            clickable = true;
             Toast.makeText(getApplicationContext(), R.string.permissionError, Toast.LENGTH_SHORT).show();
         }
     }
@@ -197,7 +211,12 @@ public class BluetoothActivity extends AppCompatActivity implements ServiceConne
         sensorBoard = serviceBinder.getMetaWearBoard(device);
 
         sensorBoard.connectAsync().continueWithTask(task -> {
-            if (task.isCancelled()) return task;
+            if (task.isCancelled())
+            {
+                progress.setVisibility(View.GONE);
+                clickable = true;
+                return task;
+            }
             return task.isFaulted() ? reconnect(sensorBoard) : Task.forResult(null);
         }).continueWith(task -> {
             if (!task.isCancelled())
@@ -210,6 +229,8 @@ public class BluetoothActivity extends AppCompatActivity implements ServiceConne
                 this.startActivity(intent);
 
                 runOnUiThread(() -> {
+                    progress.setVisibility(View.GONE);
+                    clickable = true;
                     Toast.makeText(getApplicationContext(), R.string.connectedInfo, Toast.LENGTH_SHORT).show();
                     Toast.makeText(getApplicationContext(), R.string.connectedInfo, Toast.LENGTH_SHORT).show();
                 });

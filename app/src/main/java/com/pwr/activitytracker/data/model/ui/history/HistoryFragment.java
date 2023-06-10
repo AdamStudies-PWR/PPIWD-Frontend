@@ -43,19 +43,21 @@ public class HistoryFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
-//        ArrayList<HistoryData> list = new ArrayList<>();
-//        list.add(new HistoryData("123",30000,"2022-22-02"));
-//        list.add(new HistoryData("123",3,"2022-22-02"));
-//        list.add(new HistoryData("123",3,"2022-22-02"));
-//        list.add(new HistoryData("123",3,"2022-22-02"));
-//        list.add(new HistoryData("123",3,"2022-22-02"));
-//        list.add(new HistoryData("123",34444444,"2022-22-02"));
+        // ArrayList<HistoryData> list = new ArrayList<>();
+        // list.add(new HistoryData("123",30000,"2022-22-02"));
+        // list.add(new HistoryData("123",3,"2022-22-02"));
+        // list.add(new HistoryData("123",3,"2022-22-02"));
+        // list.add(new HistoryData("123",3,"2022-22-02"));
+        // list.add(new HistoryData("123",3,"2022-22-02"));
+        // list.add(new HistoryData("123",34444444,"2022-22-02"));
         SharedPreferences settings = this.getContext().getSharedPreferences("user-prefs-key", 0);
         PORT = settings.getString("PORT","");
         IP = settings.getString("IP","");
-        new GetAsyncTask().setInstance("", this.getContext(), "http://" + IP + ":" + PORT, "/Measurements", true).execute();
+        new GetAsyncTask().setInstance("", this.getContext(),
+                "http://" + IP + ":" + PORT,    "/Measurements", true).execute();
         historyViewModel.getHistoryData().observe(this.getViewLifecycleOwner(), historyData -> {
-            ArrayAdapter arrayAdapter = new ArrayAdapter(this.getContext(), R.layout.list_history_row, (ArrayList<HistoryData>) historyData);
+            ArrayAdapter arrayAdapter = new ArrayAdapter(this.getContext(),
+                    R.layout.list_history_row, (ArrayList<HistoryData>) historyData);
             binding.listViewHistory.setAdapter(arrayAdapter);
         });
     }
