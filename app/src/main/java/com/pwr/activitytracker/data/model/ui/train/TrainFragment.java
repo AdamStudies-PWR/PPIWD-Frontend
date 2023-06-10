@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -22,14 +23,27 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import com.google.gson.Gson;
 import com.mbientlab.metawear.MetaWearBoard;
 import com.mbientlab.metawear.UnsupportedModuleException;
 import com.mbientlab.metawear.android.BtleService;
+import com.pwr.activitytracker.MainActivity;
 import com.pwr.activitytracker.R;
 import com.pwr.activitytracker.databinding.FragmentTrainBinding;
+import com.pwr.activitytracker.network.AsyncCallBack;
+import com.pwr.activitytracker.network.PostAsyncTask;
+import com.pwr.activitytracker.network.models.Measurement;
+import com.pwr.activitytracker.network.models.SensorData;
 import com.pwr.activitytracker.sensors.DeviceController;
 
-public class TrainFragment extends Fragment implements ServiceConnection
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
+
+public class TrainFragment extends Fragment implements ServiceConnection, AsyncCallBack
 {
     private BtleService.LocalBinder serviceBinder;
     private long startTime = 0;
@@ -45,6 +59,8 @@ public class TrainFragment extends Fragment implements ServiceConnection
 
     private DeviceController deviceController;
 
+    private String IP = "10.0.2.2";
+    private String PORT = "5242";
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState)
     {
@@ -161,7 +177,26 @@ public class TrainFragment extends Fragment implements ServiceConnection
         ImageButton pauseButton = requireView().findViewById(R.id.pauseButton);
         pauseButton.setVisibility(View.GONE);
 
-        deviceController.stopMeasurements();
+        SharedPreferences settings = this.getContext().getSharedPreferences("user-prefs-key", 0);
+        PORT = settings.getString("PORT","");
+        IP = settings.getString("IP","");
+        List<com.pwr.activitytracker.sensors.SensorData> measurements = deviceController.stopMeasurements();
+        Gson gson = new Gson();
+        Measurement measurement = new Measurement();
+        measurement.setDate(LocalDateTime.now().toString());
+        AtomicLong duration = new AtomicLong();
+        List list =new ArrayList();
+        for(com.pwr.activitytracker.sensors.SensorData e : new ArrayList<>(measurements))
+        {
+            duration.addAndGet(Long.parseLong(e.getTime()));
+            SensorData s =new SensorData("sensor",Float.valueOf(e.getPitch()),Float.valueOf(e.getRoll()),Float.valueOf(e.getYaw()));
+            list.add(s);
+        }
+        measurement.setDuration((int) duration.get());
+        measurement.setSensorDatas(list);
+        String requestBody = gson.toJson(measurement);
+        new PostAsyncTask().setInstance("PostMeasurements", TrainFragment.this.getContext(), "http://" + IP + ":" + PORT, "/Measurements/", requestBody, true).execute();
+
         trainingStarted = false;
         isPaused = false;
         elapsed = 0;
@@ -242,5 +277,10 @@ public class TrainFragment extends Fragment implements ServiceConnection
     public void onServiceDisconnected(ComponentName componentName)
     {
         Toast.makeText(requireContext(), R.string.disconnectedInfo, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void processRespond(String id, String respondData, Boolean isResponseSuccess) {
+
     }
 }
