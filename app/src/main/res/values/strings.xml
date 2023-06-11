@@ -43,9 +43,7 @@
     <string name="userNameLabel">Username: </string>
     <string name="defaultUserName">placeholder</string>
     <string name="passwordLabel">Password: </string>
-    <string name="passwordPlaceholder">12345678</string>
-
-    <string name="UIDDCopied">UIDD copied to clipboard</string>
+    <string name="passwordPlaceholder">placeholder</string>
     <!-- SettingsView Strings -->
 
     <!-- Login Activity Strings -->
@@ -59,12 +57,16 @@
     <string name="invalid_password">Password must be >8 characters</string>
     <string name="login_failed">"Login failed"</string>
     <string name="disconnectedInfo">Sensor disconnected</string>
-    <string name="permissionError">Could not acquire bletooth permissions. Try granting them manually</string>
-    <string name="connectedFailure">Failed connetcint to sensor</string>
+    <string name="permissionError">Could not acquire bluetooth permissions. Try granting them manually</string>
+    <string name="connectedFailure">Failed connecting to sensor</string>
     <string name="connectedInfo">Connected to sensor</string>
     <string name="please_select_device">Please select device</string>
     <!-- Login Activity Strings -->
 
+    <string name="refreshButton">Refresh</string>
+
+
+    <string name="deviceUnreachable">Selected device is unreachable. Could not connect</string>
     <string-array name="available_activities">
         <item>Jumping Jack</item>
     </string-array>

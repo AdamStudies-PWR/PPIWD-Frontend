@@ -1,7 +1,6 @@
 package com.pwr.activitytracker;
 
 import android.Manifest;
-import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.ComponentName;
@@ -36,6 +35,7 @@ import bolts.Task;
 
 public class BluetoothActivity extends AppCompatActivity implements ServiceConnection
 {
+    private final String TAG = "BluetoothActivity";
     private final String PREFERENCES_KEY = "user-prefs-key";
 
     private BtleService.LocalBinder serviceBinder;
@@ -44,6 +44,8 @@ public class BluetoothActivity extends AppCompatActivity implements ServiceConne
     private Set<BluetoothDevice> pairedDevices = null;
     private BluetoothDevice selectedDevice;
     private String deviceName = "";
+
+    private static int retryCount = 0;
 
     private static boolean clickable = false;
 
@@ -82,8 +84,16 @@ public class BluetoothActivity extends AppCompatActivity implements ServiceConne
 
         listView.setOnItemClickListener((parent, view, position, id) -> {
             selectedDevice = nthElement(pairedDevices, position);
-            saveDeviceName(selectedDevice.getName());
-            connectToSensor();
+            if (selectedDevice != null)
+            {
+                saveDeviceName(selectedDevice.getName());
+                connectToSensor();
+            }
+            else if (!clickable)
+            {
+                Toast.makeText(getApplicationContext(), R.string.deviceUnreachable,
+                        Toast.LENGTH_SHORT).show();
+            }
         });
 
         deviceName = loadPreviousDevice();
@@ -111,7 +121,7 @@ public class BluetoothActivity extends AppCompatActivity implements ServiceConne
             pairedDevices = bluetoothAdapter.getBondedDevices();
         } catch (SecurityException exception)
         {
-            Log.e("BLUETOOTH", "Error granting permission: " + exception.toString());
+            Log.e(TAG, "Error granting permission: " + exception.toString());
             Toast.makeText(getApplicationContext(), R.string.permissionError, Toast.LENGTH_SHORT).show();
             progress.setVisibility(View.GONE);
             return;
@@ -123,7 +133,8 @@ public class BluetoothActivity extends AppCompatActivity implements ServiceConne
             devicesNames = pairedDevices.stream().map(BluetoothDevice::getName).collect(Collectors.toList());
         }
 
-        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(getApplicationContext(), android.R.layout.simple_list_item_1, devicesNames);
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(getApplicationContext(),
+                android.R.layout.simple_list_item_1, devicesNames);
         listView.setAdapter(arrayAdapter);
 
         if (devicesNames.contains(savedName))
@@ -141,18 +152,35 @@ public class BluetoothActivity extends AppCompatActivity implements ServiceConne
         getApplicationContext().unbindService(this);
     }
 
-    public static Task<Void> reconnect(final MetaWearBoard board)
+    public Task<Void> reconnect(final MetaWearBoard board)
     {
-        return board.connectAsync().continueWithTask(task -> {
-            if (task.isFaulted())
-            {
-                return reconnect(board);
-            } else if (task.isCancelled())
-            {
-                return task;
-            }
-            return Task.forResult(null);
-        });
+        if (retryCount < 5)
+        {
+            retryCount++;
+
+            return board.connectAsync().continueWithTask(task -> {
+                if (task.isFaulted())
+                {
+                    return reconnect(board);
+                }
+                else if (task.isCancelled())
+                {
+                    return task;
+                }
+                return Task.forResult(null);
+            });
+        }
+        else
+        {
+            return board.disconnectAsync().continueWith(task ->  {
+                runOnUiThread(() -> {
+                    Toast.makeText(getApplicationContext(), R.string.deviceUnreachable,
+                                    Toast.LENGTH_SHORT).show();
+                });
+                Log.e(TAG, "Connection aborted");
+                return null;
+            });
+        }
     }
 
     void setConnInterval(Settings settings)
@@ -177,10 +205,9 @@ public class BluetoothActivity extends AppCompatActivity implements ServiceConne
         }
         else
         {
-            Log.e("BLUETOOTH", "Error, device is null");
+            Log.e(TAG, "Error, device is null");
             progress.setVisibility(View.GONE);
             clickable = true;
-            Toast.makeText(getApplicationContext(), R.string.permissionError, Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -217,8 +244,26 @@ public class BluetoothActivity extends AppCompatActivity implements ServiceConne
                 clickable = true;
                 return task;
             }
-            return task.isFaulted() ? reconnect(sensorBoard) : Task.forResult(null);
+
+            if (task.isFaulted())
+            {
+                return reconnect(sensorBoard);
+            }
+            else
+            {
+                return Task.forResult(null);
+            }
         }).continueWith(task -> {
+            if (retryCount == 5)
+            {
+                runOnUiThread(() -> {
+                    retryCount = 0;
+                    progress.setVisibility(View.GONE);
+                    clickable = true;
+                });
+                return null;
+            }
+
             if (!task.isCancelled())
             {
                 setConnInterval(sensorBoard.getModule(Settings.class));
@@ -231,7 +276,6 @@ public class BluetoothActivity extends AppCompatActivity implements ServiceConne
                 runOnUiThread(() -> {
                     progress.setVisibility(View.GONE);
                     clickable = true;
-                    Toast.makeText(getApplicationContext(), R.string.connectedInfo, Toast.LENGTH_SHORT).show();
                     Toast.makeText(getApplicationContext(), R.string.connectedInfo, Toast.LENGTH_SHORT).show();
                 });
 
@@ -287,5 +331,11 @@ public class BluetoothActivity extends AppCompatActivity implements ServiceConne
                 startConnectionProcedure(deviceName);
             }
         }
+    }
+
+    public void refreshView(View view)
+    {
+        Log.i(TAG, "Refreshing");
+        startConnectionProcedure("");
     }
 }

@@ -14,6 +14,7 @@
         android:layout_marginTop="20dp"
         android:layout_marginEnd="20dp"
         android:layout_marginBottom="20dp"
+        android:gravity="center"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -25,7 +26,6 @@
             android:layout_width="wrap_content"
             android:layout_height="0dp"
             android:layout_gravity="bottom"
-            android:layout_marginTop="12dp"
             android:layout_weight="1"
             android:gravity="bottom"
             android:text="@string/please_select_device"
@@ -40,6 +40,14 @@
             tools:ignore="MissingConstraints">
 
         </ListView>
+
+        <Button
+            android:id="@+id/refreshButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="refreshView"
+            android:text="@string/refreshButton" />
+
     </LinearLayout>
 
     <ProgressBar
@@ -50,8 +58,8 @@
         android:layout_centerHorizontal="true"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
