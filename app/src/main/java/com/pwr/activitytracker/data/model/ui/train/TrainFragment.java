@@ -2,15 +2,20 @@ package com.pwr.activitytracker.data.model.ui.train;
 
 import static android.content.Context.BIND_AUTO_CREATE;
 
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -52,6 +57,7 @@ public class TrainFragment extends Fragment implements ServiceConnection, AsyncC
 
     private boolean trainingStarted = false;
     private boolean isPaused = false;
+    private static boolean bluetoothError = false;
 
     private Handler timerHandler;
 
@@ -61,12 +67,32 @@ public class TrainFragment extends Fragment implements ServiceConnection, AsyncC
 
     private String IP = "10.0.2.2";
     private String PORT = "5242";
+
+    private final BroadcastReceiver btReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+
+            if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
+                final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE,
+                        BluetoothAdapter.ERROR);
+                if (state == BluetoothAdapter.STATE_OFF)
+                {
+                    bluetoothError = true;
+                }
+        }
+    }};
+
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState)
     {
         timerHandler = new Handler(Looper.getMainLooper());
 
         binding = FragmentTrainBinding.inflate(inflater, container, false);
+
+        IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
+        requireActivity().registerReceiver(btReceiver, filter);
+
         return binding.getRoot();
     }
 
@@ -112,6 +138,12 @@ public class TrainFragment extends Fragment implements ServiceConnection, AsyncC
         Intent intent = requireActivity().getIntent();
         BluetoothDevice device = intent.getParcelableExtra("sensor");
         MetaWearBoard sensorBoard = serviceBinder.getMetaWearBoard(device);
+
+        sensorBoard.onUnexpectedDisconnect(status -> {
+            Log.e("UWU", "Sensor disconnected");
+            bluetoothError = true;
+        });
+
         try
         {
             deviceController.setSensors(sensorBoard);
@@ -135,6 +167,19 @@ public class TrainFragment extends Fragment implements ServiceConnection, AsyncC
 
     private void startTraining()
     {
+        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+        if (adapter == null)
+        {
+            Toast.makeText(requireContext(), R.string.connectivty_issue, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        else if (!adapter.isEnabled())
+        {
+            Toast.makeText(requireContext(), R.string.bt_disabled, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+
         TextView headingView = requireView().findViewById(R.id.headingData);
         TextView pitchView = requireView().findViewById(R.id.pitchData);
         TextView rollView = requireView().findViewById(R.id.rollData);
@@ -230,6 +275,15 @@ public class TrainFragment extends Fragment implements ServiceConnection, AsyncC
 
     private void updateTimer()
     {
+        if (bluetoothError)
+        {
+            bluetoothError = false;
+            Toast.makeText(requireContext(), "Lost connection to sensor!", Toast.LENGTH_SHORT)
+                    .show();
+            stopTraining();
+            return;
+        }
+
         if (!trainingStarted)
         {
             return;

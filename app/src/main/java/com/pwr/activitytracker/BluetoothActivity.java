@@ -47,7 +47,7 @@ public class BluetoothActivity extends AppCompatActivity implements ServiceConne
 
     private static int retryCount = 0;
 
-    private static boolean clickable = false;
+    private static boolean clickable = true;
 
     private ProgressBar progress;
 
@@ -241,7 +241,6 @@ public class BluetoothActivity extends AppCompatActivity implements ServiceConne
             if (task.isCancelled())
             {
                 progress.setVisibility(View.GONE);
-                clickable = true;
                 return task;
             }
 

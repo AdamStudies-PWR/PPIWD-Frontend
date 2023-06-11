@@ -67,6 +67,8 @@
 
 
     <string name="deviceUnreachable">Selected device is unreachable. Could not connect</string>
+    <string name="connectivty_issue">Could not reach bluetooth adapter, please check device settings</string>
+    <string name="bt_disabled">Bluetooth is dissabled, cannot continue</string>
     <string-array name="available_activities">
         <item>Jumping Jack</item>
     </string-array>
