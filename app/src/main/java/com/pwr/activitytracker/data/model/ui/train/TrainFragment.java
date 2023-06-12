@@ -140,7 +140,6 @@ public class TrainFragment extends Fragment implements ServiceConnection, AsyncC
         MetaWearBoard sensorBoard = serviceBinder.getMetaWearBoard(device);
 
         sensorBoard.onUnexpectedDisconnect(status -> {
-            Log.e("UWU", "Sensor disconnected");
             bluetoothError = true;
         });
 

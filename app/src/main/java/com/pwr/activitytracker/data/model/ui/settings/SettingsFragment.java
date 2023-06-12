@@ -26,6 +26,8 @@ import androidx.fragment.app.Fragment;
 import com.pwr.activitytracker.R;
 import com.pwr.activitytracker.databinding.FragmentSettingsBinding;
 
+import java.util.Objects;
+
 public class SettingsFragment extends Fragment
 {
     private final String PREFERENCES_KEY = "user-prefs-key";
@@ -44,8 +46,6 @@ public class SettingsFragment extends Fragment
     {
         loadSettings();
 
-        binding.showPasswordButton.setOnTouchListener(this::showHidePassword);
-        binding.changePasswordButton.setOnClickListener(this::changePassword);
         binding.logoutButton.setOnClickListener(this::logout);
         binding.ipSettingsText.addTextChangedListener(new TextWatcher()
         {
@@ -92,6 +92,8 @@ public class SettingsFragment extends Fragment
 
         binding.ipSettingsText.setText(settings.getString("IP", "10.0.2.2"));
         binding.portSettingsText.setText(settings.getString("PORT", "5242"));
+        binding.spinner.setText(settings.getString("DEVICE_ID","Unknown device"));
+        binding.userNameText.setText(requireActivity().getIntent().getStringExtra("username"));
     }
 
     @Override
@@ -101,29 +103,8 @@ public class SettingsFragment extends Fragment
         binding = null;
     }
 
-    public boolean showHidePassword(View view, MotionEvent motionEvent)
-    {
-        EditText password = requireView().findViewById(R.id.passwordText);
-        if (motionEvent.getAction() == MotionEvent.ACTION_DOWN)
-        {
-            password.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
-        }
-        else if (motionEvent.getAction() == MotionEvent.ACTION_UP)
-        {
-            password.setTransformationMethod(PasswordTransformationMethod.getInstance());
-        }
-
-        return false;
-    }
-
-    public void changePassword(View view)
-    {
-        Toast.makeText(requireContext(), "TODO: Not implemented", Toast.LENGTH_SHORT).show();
-    }
-
     public void logout(View view)
     {
-        Toast.makeText(requireContext(), "TODO: Not implemented", Toast.LENGTH_SHORT).show();
         requireActivity().finish();
     }
 }
