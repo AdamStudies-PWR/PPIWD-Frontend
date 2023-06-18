@@ -2,6 +2,7 @@ package com.pwr.activitytracker;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
@@ -26,6 +27,7 @@ import com.pwr.activitytracker.data.model.ui.history.HistoryViewModel;
 import com.pwr.activitytracker.data.model.ui.train.login.LoginActivity;
 import com.pwr.activitytracker.databinding.ActivityMainBinding;
 import com.pwr.activitytracker.network.AsyncCallBack;
+import com.pwr.activitytracker.network.models.History;
 import com.pwr.activitytracker.network.models.Measurement;
 
 import org.w3c.dom.Text;
@@ -95,19 +97,21 @@ public class MainActivity extends AppCompatActivity implements AsyncCallBack
     }
 
     @Override
-    public void processRespond(String id, String respondData, Boolean isResponseSuccess) {
+    public void processRespond(String id, String respondData, Boolean isResponseSuccess)
+    {
         if (Objects.equals(id, ""))
         {
             if (isResponseSuccess)
             {
                 Gson gson = new Gson();
-                Type listType = new TypeToken<ArrayList<Measurement>>(){}.getType();
-                List<Measurement> measurement =gson.fromJson(respondData,listType);
-                List<HistoryData> historyData = new ArrayList();
-                for(Measurement e : new ArrayList<Measurement>(measurement))
+
+                Type listType = new TypeToken<ArrayList<History>>(){}.getType();
+                List<History> measurement = gson.fromJson(respondData, listType);
+                List<HistoryData> historyData = new ArrayList<>();
+                for(History e : new ArrayList<>(measurement))
                 {
                     String localDateTime = e.getDate().split("T")[0];
-                    historyData.add(new HistoryData(String.valueOf(e.duration),11,localDateTime));
+                    historyData.add(new HistoryData(String.valueOf(e.getDuration()), e.getJumpCount(), localDateTime));
                 }
 
                 historyViewModel.setHistoryData(historyData);
@@ -116,7 +120,8 @@ public class MainActivity extends AppCompatActivity implements AsyncCallBack
     }
 
     @Override
-    public void onPointerCaptureChanged(boolean hasCapture) {
+    public void onPointerCaptureChanged(boolean hasCapture)
+    {
         super.onPointerCaptureChanged(hasCapture);
     }
 }
